@@ -1,7 +1,10 @@
 var io = require('socket.io-client');
 
 var Canvas = require('./canvas');
+
 var global = require('./global');
+
+
 
 var playerNameInput = document.getElementById('playerNameInput');
 var socket;
@@ -56,8 +59,10 @@ window.onload = function () {
 
     btn.onclick = function () {
 
-        // Checks if the nick is valid.
-        if (validNick()) {
+        console.log(playerNameInput.value);
+
+        // Checks if the nick is valid and not empty
+        if (validNick() && playerNameInput.value !== "" ) {
             nickErrorText.style.opacity = 0;
             startGame('player');
         } else {
@@ -70,7 +75,7 @@ window.onload = function () {
     var instructions = document.getElementById('instructions');
 
     settingsMenu.onclick = function () {
-        if (settings.style.maxHeight == '300px') {
+        if (settings.style.maxHeight === '300px') {
             settings.style.maxHeight = '0px';
         } else {
             settings.style.maxHeight = '300px';
@@ -235,7 +240,7 @@ function setupSocket(socket) {
     });
 
     // Handle movement.
-    socket.on('serverTellPlayerMove', function (userData, foodsList, massList) {
+    socket.on('serverTellPlayerMove', function (userData, foodsList, massList, nodesList) {
         var playerData;
         for (var i = 0; i < userData.length; i++) {
             if (typeof(userData[i].id) === "undefined") {
@@ -257,6 +262,7 @@ function setupSocket(socket) {
         }
         users = userData;
         foods = foodsList;
+        nodes = nodesList;
         fireFood = massList;
     });
 
@@ -315,9 +321,10 @@ function drawFood(food) {
 
 
 function drawNode(node) {
-    context.strokeStyle = 'hsl(' + node.hue + ', 100%, 45%)';
-    context.fillStyle = 'hsl(' + node.hue + ', 100%, 50%)';
+    context.strokeStyle = '#000';
+    context.fillStyle = '#000';
     context.lineWidth = nodeConfig.border;
+    console.log(node);
     drawCircle(node.x - player.x + global.screenWidth / 2,
         node.y - player.y + global.screenHeight / 2,
         node.radius, global.nodeSides);
@@ -450,8 +457,9 @@ function drawCursor () {
 function drawgrid() {
     context.lineWidth = 1;
     context.strokeStyle = global.lineColor;
-    context.globalAlpha = 0.15;
+    context.fillStyle = '#4c4c4c';
     context.beginPath();
+
 
     for (var x = global.xoffset - player.x; x < global.screenWidth; x += global.screenHeight / 18) {
         context.moveTo(x, 0);
@@ -463,8 +471,7 @@ function drawgrid() {
         context.lineTo(global.screenWidth, y);
     }
 
-    context.stroke();
-    context.globalAlpha = 1;
+    context.fill();
 }
 
 function drawborder() {

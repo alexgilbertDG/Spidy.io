@@ -40,6 +40,19 @@ exports.randomPosition = function (radius) {
     };
 };
 
+exports.gridPosition = function() {
+    var finalGrid = [];
+    for (var x = 0; x < cfg.gameWidth; x += cfg.gridGap) {
+        for (var y = 0; y < cfg.gameHeight; y += cfg.gridGap) {
+            finalGrid.push({x: x, y: y});
+        }
+    }
+
+    return finalGrid;
+
+
+};
+
 exports.uniformPosition = function(points, radius) {
     var bestCandidate, maxDistance = 0;
     var numberOfCandidates = 10;

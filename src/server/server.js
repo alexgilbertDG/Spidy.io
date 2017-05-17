@@ -25,6 +25,7 @@ var tree = quadtree(0, 0, c.gameWidth, c.gameHeight);
 var users = [];
 var massFood = [];
 var food = [];
+var node = [];
 
 var sockets = {};
 
@@ -65,6 +66,23 @@ function addFood(toAdd) {
             mass: 10,
             hue: 0
         });
+    }
+}
+
+function addNode() {
+    var grid = util.gridPosition();
+    var radius = 10;
+    for (var i=0;i<grid.length;i++) {
+        node.push({
+            // Make IDs unique.
+            id: ((new Date()).getTime() + '' + food.length) >>> 0,
+            x: grid[i].x,
+            y: grid[i].y,
+            radius: radius,
+            mass: 10,
+            hue: 0
+        });
+
     }
 }
 
@@ -265,7 +283,7 @@ io.on('connection', function (socket) {
             sockets[player.id] = socket;
 
             var radius = util.massToRadius(c.defaultPlayerMass);
-            var position = c.newPlayerInitialPosition == 'farthest' ? util.uniformPosition(users, radius) : util.randomPosition(radius);
+            var position = c.newPlayerInitialPosition === 'farthest' ? util.uniformPosition(users, radius) : util.randomPosition(radius);
 
             player.x = position.x;
             player.y = position.y;
@@ -288,6 +306,7 @@ io.on('connection', function (socket) {
             currentPlayer = player;
             currentPlayer.lastHeartbeat = new Date().getTime();
             users.push(currentPlayer);
+            addNode();
 
             io.emit('playerJoin', {name: currentPlayer.name});
 
@@ -699,7 +718,21 @@ function sendUpdates() {
                 return f;
             });
 
-        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleFood, visibleMass);
+
+        var visibleNode = node
+            .map(function (f) {
+                if (f.x > u.x - u.screenWidth / 2 - 20 &&
+                    f.x < u.x + u.screenWidth / 2 + 20 &&
+                    f.y > u.y - u.screenHeight / 2 - 20 &&
+                    f.y < u.y + u.screenHeight / 2 + 20) {
+                    return f;
+                }
+            })
+            .filter(function (f) {
+                return f;
+            });
+
+        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleFood, visibleMass, visibleNode);
         if (leaderboardChanged) {
             sockets[u.id].emit('leaderboard', {
                 players: users.length,
