@@ -9,11 +9,16 @@ module.exports = {
     KEY_UP: 38,
     KEY_RIGHT: 39,
     KEY_DOWN: 40,
+    KEY_LEFT_A: 65,
+    KEY_UP_W: 87,
+    KEY_RIGHT_D: 68,
+    KEY_DOWN_S: 83,
     borderDraw: false,
     spin: -Math.PI,
     enemySpin: -Math.PI,
     mobile: false,
     foodSides: 10,
+    nodeSides: 10,
     virusSides: 20,
 
     // Canvas

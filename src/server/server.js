@@ -25,7 +25,7 @@ var tree = quadtree(0, 0, c.gameWidth, c.gameHeight);
 var users = [];
 var massFood = [];
 var food = [];
-var virus = [];
+
 var sockets = {};
 
 var leaderboard = [];
@@ -55,36 +55,19 @@ app.use(express.static(__dirname + '/../client'));
 function addFood(toAdd) {
     var radius = util.massToRadius(c.foodMass);
     while (toAdd--) {
-        var position = c.foodUniformDisposition ? util.uniformPosition(food, radius) : util.randomPosition(radius);
+        var position = util.uniformPosition(food, radius);
         food.push({
             // Make IDs unique.
             id: ((new Date()).getTime() + '' + food.length) >>> 0,
             x: position.x,
             y: position.y,
             radius: radius,
-            mass: Math.random() + 2,
-            hue: Math.round(Math.random() * 360)
+            mass: 10,
+            hue: 0
         });
     }
 }
 
-function addVirus(toAdd) {
-    while (toAdd--) {
-        var mass = util.randomInRange(c.virus.defaultMass.from, c.virus.defaultMass.to, true);
-        var radius = util.massToRadius(mass);
-        var position = c.virusUniformDisposition ? util.uniformPosition(virus, radius) : util.randomPosition(radius);
-        virus.push({
-            id: ((new Date()).getTime() + '' + virus.length) >>> 0,
-            x: position.x,
-            y: position.y,
-            radius: radius,
-            mass: mass,
-            fill: c.virus.fill,
-            stroke: c.virus.stroke,
-            strokeWidth: c.virus.strokeWidth
-        });
-    }
-}
 
 function removeFood(toRem) {
     while (toRem--) {
@@ -229,12 +212,6 @@ function balanceMass() {
         //console.log('[DEBUG] Removing ' + foodToRemove + ' food from level!');
         removeFood(foodToRemove);
         //console.log('[DEBUG] Mass rebalanced!');
-    }
-
-    var virusToAdd = c.maxVirus - virus.length;
-
-    if (virusToAdd > 0) {
-        addVirus(virusToAdd);
     }
 }
 
@@ -571,14 +548,7 @@ function tickPlayer(currentPlayer) {
                 return b ? a.concat(c) : a;
             }, []);
 
-        var virusCollision = virus.map(funcFood)
-            .reduce(function (a, b, c) {
-                return b ? a.concat(c) : a;
-            }, []);
 
-        if (virusCollision > 0 && currentCell.mass > virus[virusCollision].mass) {
-            sockets[currentPlayer.id].emit('virusSplit', z);
-        }
 
         var masaGanada = 0;
         for (var m = 0; m < massEaten.length; m++) {
@@ -680,18 +650,6 @@ function sendUpdates() {
                 return f;
             });
 
-        var visibleVirus = virus
-            .map(function (f) {
-                if (f.x > u.x - u.screenWidth / 2 - f.radius &&
-                    f.x < u.x + u.screenWidth / 2 + f.radius &&
-                    f.y > u.y - u.screenHeight / 2 - f.radius &&
-                    f.y < u.y + u.screenHeight / 2 + f.radius) {
-                    return f;
-                }
-            })
-            .filter(function (f) {
-                return f;
-            });
 
         var visibleMass = massFood
             .map(function (f) {
@@ -741,7 +699,7 @@ function sendUpdates() {
                 return f;
             });
 
-        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleFood, visibleMass, visibleVirus);
+        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleFood, visibleMass);
         if (leaderboardChanged) {
             sockets[u.id].emit('leaderboard', {
                 players: users.length,

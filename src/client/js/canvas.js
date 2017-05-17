@@ -56,7 +56,7 @@ class Canvas {
     	var result = false;
     	var found = false;
     	for (var i = 0, len = list.length; i < len; i++) {
-    		if (list[i] == direction) {
+    		if (list[i] === direction) {
     			found = true;
     			if (!isAddition) {
     				result = true;
@@ -82,12 +82,12 @@ class Canvas {
     	var directionVertical = 0;
     	for (var i = 0, len = list.length; i < len; i++) {
     		if (directionHorizontal === 0) {
-    			if (list[i] == global.KEY_LEFT) directionHorizontal -= Number.MAX_VALUE;
-    			else if (list[i] == global.KEY_RIGHT) directionHorizontal += Number.MAX_VALUE;
+    			if (list[i] === global.KEY_LEFT || list[i] === global.KEY_LEFT_A) directionHorizontal -= Number.MAX_VALUE;
+    			else if (list[i] === global.KEY_RIGHT || list[i] === global.KEY_RIGHT_D) directionHorizontal += Number.MAX_VALUE;
     		}
     		if (directionVertical === 0) {
-    			if (list[i] == global.KEY_UP) directionVertical -= Number.MAX_VALUE;
-    			else if (list[i] == global.KEY_DOWN) directionVertical += Number.MAX_VALUE;
+    			if (list[i] === global.KEY_UP || list[i] === global.KEY_UP_W) directionVertical -= Number.MAX_VALUE;
+    			else if (list[i] === global.KEY_DOWN || list[i] === global.KEY_DOWN_S) directionVertical += Number.MAX_VALUE;
     		}
     	}
     	this.target.x += directionHorizontal;
@@ -100,11 +100,11 @@ class Canvas {
     }
 
     horizontal(key) {
-    	return key == global.KEY_LEFT || key == global.KEY_RIGHT;
+    	return key === global.KEY_LEFT || key === global.KEY_RIGHT || key === global.KEY_LEFT_A || key === global.KEY_RIGHT_D;
     }
 
     vertical(key) {
-    	return key == global.KEY_DOWN || key == global.KEY_UP;
+    	return key === global.KEY_DOWN || key === global.KEY_UP || key === global.KEY_UP_W || key === global.KEY_DOWN_S;
     }
 
     // Register when the mouse goes off the canvas.
@@ -116,11 +116,12 @@ class Canvas {
     }
 
     gameInput(mouse) {
+        /*
     	if (!this.directionLock) {
     		this.parent.target.x = mouse.clientX - this.width / 2;
     		this.parent.target.y = mouse.clientY - this.height / 2;
             global.target = this.parent.target;
-    	}
+    	} */
     }
 
     touchInput(touch) {

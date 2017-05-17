@@ -96,6 +96,10 @@ var foodConfig = {
     border: 0,
 };
 
+var nodeConfig = {
+    border: 0,
+};
+
 var playerConfig = {
     border: 6,
     textColor: '#FFFFFF',
@@ -115,7 +119,7 @@ var player = {
 global.player = player;
 
 var foods = [];
-var viruses = [];
+var nodes = [];
 var fireFood = [];
 var users = [];
 var leaderboard = [];
@@ -231,7 +235,7 @@ function setupSocket(socket) {
     });
 
     // Handle movement.
-    socket.on('serverTellPlayerMove', function (userData, foodsList, massList, virusList) {
+    socket.on('serverTellPlayerMove', function (userData, foodsList, massList) {
         var playerData;
         for (var i = 0; i < userData.length; i++) {
             if (typeof(userData[i].id) == "undefined") {
@@ -253,7 +257,6 @@ function setupSocket(socket) {
         }
         users = userData;
         foods = foodsList;
-        viruses = virusList;
         fireFood = massList;
     });
 
@@ -279,10 +282,7 @@ function setupSocket(socket) {
         socket.close();
     });
 
-    socket.on('virusSplit', function (virusCell) {
-        socket.emit('2', virusCell);
-        reenviar = false;
-    });
+
 }
 
 function drawCircle(centerX, centerY, radius, sides) {
@@ -313,13 +313,14 @@ function drawFood(food) {
         food.radius, global.foodSides);
 }
 
-function drawVirus(virus) {
-    context.strokeStyle = virus.stroke;
-    context.fillStyle = virus.fill;
-    context.lineWidth = virus.strokeWidth;
-    drawCircle(virus.x - player.x + global.screenWidth / 2,
-        virus.y - player.y + global.screenHeight / 2,
-        virus.radius, global.virusSides);
+
+function drawNode(node) {
+    context.strokeStyle = 'hsl(' + node.hue + ', 100%, 45%)';
+    context.fillStyle = 'hsl(' + node.hue + ', 100%, 50%)';
+    context.lineWidth = nodeConfig.border;
+    drawCircle(node.x - player.x + global.screenWidth / 2,
+        node.y - player.y + global.screenHeight / 2,
+        node.radius, global.nodeSides);
 }
 
 function drawFireFood(mass) {
@@ -537,7 +538,7 @@ function gameLoop() {
             drawgrid();
             foods.forEach(drawFood);
             fireFood.forEach(drawFireFood);
-            viruses.forEach(drawVirus);
+            nodes.forEach(drawNode);
 
             if (global.borderDraw) {
                 drawborder();
