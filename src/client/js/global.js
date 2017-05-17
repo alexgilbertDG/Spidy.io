@@ -35,6 +35,7 @@ module.exports = {
     continuity: false,
     startPingTime: 0,
     toggleMassState: 0,
+    cursor: {x:0,y:0,r:10},
     backgroundColor: '#f2fbff',
     lineColor: '#000000',
 };

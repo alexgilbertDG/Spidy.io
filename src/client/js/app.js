@@ -238,12 +238,12 @@ function setupSocket(socket) {
     socket.on('serverTellPlayerMove', function (userData, foodsList, massList) {
         var playerData;
         for (var i = 0; i < userData.length; i++) {
-            if (typeof(userData[i].id) == "undefined") {
+            if (typeof(userData[i].id) === "undefined") {
                 playerData = userData[i];
                 i = userData.length;
             }
         }
-        if (global.playerType == 'player') {
+        if (global.playerType === 'player') {
             var xoffset = player.x - playerData.x;
             var yoffset = player.y - playerData.y;
 
@@ -402,7 +402,7 @@ function drawPlayers(order) {
         context.fill();
         context.stroke();
         var nameCell = "";
-        if (typeof(userCurrent.id) == "undefined")
+        if (typeof(userCurrent.id) === "undefined")
             nameCell = player.name;
         else
             nameCell = userCurrent.name;
@@ -433,6 +433,18 @@ function drawPlayers(order) {
 
 function valueInRange(min, max, value) {
     return Math.min(max, Math.max(min, value));
+}
+
+function drawCursor () {
+
+    context.lineWidth = 1;
+    context.strokeStyle = global.lineColor;
+    context.beginPath();
+
+    context.arc(global.cursor.x, global.cursor.y, global.cursor.r, 0,2*Math.PI);
+    context.fill();
+
+
 }
 
 function drawgrid() {
@@ -539,6 +551,7 @@ function gameLoop() {
             foods.forEach(drawFood);
             fireFood.forEach(drawFireFood);
             nodes.forEach(drawNode);
+            drawCursor();
 
             if (global.borderDraw) {
                 drawborder();
