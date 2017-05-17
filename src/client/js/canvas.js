@@ -118,13 +118,6 @@ class Canvas {
     gameInput(mouse) {
         global.cursor.x = mouse.clientX;
          global.cursor.y = mouse.clientY;
-
-        /*
-    	if (!this.directionLock) {
-    		this.parent.target.x = mouse.clientX - this.width / 2;
-    		this.parent.target.y = mouse.clientY - this.height / 2;
-            global.target = this.parent.target;
-    	} */
     }
 
     touchInput(touch) {

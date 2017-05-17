@@ -291,7 +291,12 @@ function setupSocket(socket) {
 
 }
 
-function drawCircle(centerX, centerY, radius, sides) {
+function drawCircle(centerX, centerY, radius, sides, fixed = false) {
+
+    if (fixed) {
+        centerX = centerX - player.x + global.screenWidth / 2;
+        centerY = centerY - player.y + global.screenHeight / 2;
+    }
     var theta = 0;
     var x = 0;
     var y = 0;
@@ -325,9 +330,9 @@ function drawNode(node) {
     context.fillStyle = '#000';
     context.lineWidth = nodeConfig.border;
     console.log(node);
-    drawCircle(node.x - player.x + global.screenWidth / 2,
-        node.y - player.y + global.screenHeight / 2,
-        node.radius, global.nodeSides);
+    drawCircle(node.x,
+        node.y,
+        node.radius, global.nodeSides, true);
 }
 
 function drawFireFood(mass) {
