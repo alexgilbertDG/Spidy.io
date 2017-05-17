@@ -50,7 +50,6 @@ pool.connect(function (err) {
 });
 
 var initMassLog = util.log(c.defaultPlayerMass, c.slowBase);
-
 app.use(express.static(__dirname + '/../client'));
 
 function addFood(toAdd) {

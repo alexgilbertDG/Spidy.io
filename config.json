@@ -33,7 +33,7 @@
     "minMassLoss": 50,
     "mergeTimer": 15,
     "nodeRadius":20,
-    "gridGap":100,
+    "gridGap":200,
     "sqlinfo":{
       "connectionLimit": 100,
       "host": "localhost",
