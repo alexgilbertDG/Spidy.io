@@ -631,6 +631,32 @@ function moveloop() {
     for (i = 0; i < massFood.length; i++) {
         if (massFood[i].speed > 0) moveMass(massFood[i]);
     }
+
+    for (i = 0; i < spiderWeb.length; i++) {
+        let web = spiderWeb[i];
+
+
+        if(!web.isReturning) {
+            web.endPoint.x += web.dir.x * c.spiderWebSpeed;
+            web.endPoint.y += web.dir.y * c.spiderWebSpeed;
+        }
+        else {
+            web.endPoint.x += (web.player.x - web.endPoint.x) * 0.2;
+            web.endPoint.y += (web.player.y - web.endPoint.y) * 0.2;
+        }
+
+        let x = web.endPoint.x - web.player.x;
+        let y = web.endPoint.y - web.player.y;
+        let dist = Math.sqrt(x*x + y*y);
+        if(web.isReturning && dist < 20) {
+            spiderWeb.splice(i, 1);
+            i--;
+        }
+        else if(dist > c.spiderWebRange) {
+            web.isReturning = true;
+        }
+
+    }
 }
 
 function gameloop() {
@@ -671,6 +697,8 @@ function gameloop() {
                 }
             }
         }
+
+
     }
     balanceMass();
 }

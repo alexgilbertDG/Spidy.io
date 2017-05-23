@@ -34,6 +34,8 @@
     "mergeTimer": 15,
     "nodeRadius":20,
     "gridGap":100,
+    "spiderWebRange": 300,
+    "spiderWebSpeed": 15,
     "sqlinfo":{
       "connectionLimit": 100,
       "host": "localhost",

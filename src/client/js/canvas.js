@@ -32,8 +32,8 @@ class Canvas {
     mouseDown(event) {
         var self = this.parent;
         
-        var pos = { x: event.clientX, y: event.clientY };
-        
+        var pos = { x: event.clientX - this.width/2, y: event.clientY - this.height/2};
+
         //normalize vector
         var dist = Math.sqrt(pos.x * pos.x + pos.y * pos.y);
         pos.x /= dist;
