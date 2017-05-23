@@ -125,6 +125,7 @@ global.player = player;
 
 var foods = [];
 var nodes = [];
+var spiderWeb = [];
 var fireFood = [];
 var users = [];
 var leaderboard = [];
@@ -240,7 +241,7 @@ function setupSocket(socket) {
     });
 
     // Handle movement.
-    socket.on('serverTellPlayerMove', function (userData, foodsList, massList, nodesList) {
+    socket.on('serverTellPlayerMove', function (userData, foodsList, massList, nodesList, webList) {
         var playerData;
         for (var i = 0; i < userData.length; i++) {
             if (typeof(userData[i].id) === "undefined") {
@@ -264,6 +265,7 @@ function setupSocket(socket) {
         foods = foodsList;
         nodes = nodesList;
         fireFood = massList;
+        spiderWeb = webList;
     });
 
     // Death.
@@ -324,7 +326,7 @@ function drawNode(node) {
     context.strokeStyle = '#000';
     context.fillStyle = '#000';
     context.lineWidth = nodeConfig.border;
-    console.log(node);
+    //console.log(node);
     drawCircle(node.x - player.x + global.screenWidth / 2,
         node.y - player.y + global.screenHeight / 2,
         node.radius, global.nodeSides);
@@ -519,6 +521,27 @@ function drawborder() {
     }
 }
 
+function drawSpiderWeb(web) {
+
+    var x = web.player.x - player.x + global.screenWidth / 2;
+    var y = web.player.y - player.y + global.screenHeight / 2;
+
+    var x1 = web.endPoint.x - player.x + global.screenWidth / 2;
+    var y1 = web.endPoint.y - player.y + global.screenHeight / 2;
+    
+
+
+    context.lineWidth = 2;
+    context.strokeStyle = "#333";
+
+    context.beginPath();
+    context.moveTo(x, y);
+    context.lineTo(x1, y1);
+    context.stroke();
+    context.closePath();
+}
+
+
 window.requestAnimFrame = (function () {
     return window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
@@ -559,6 +582,7 @@ function gameLoop() {
             fireFood.forEach(drawFireFood);
             nodes.forEach(drawNode);
             drawCursor();
+            spiderWeb.forEach(drawSpiderWeb);
 
             if (global.borderDraw) {
                 drawborder();

@@ -22,8 +22,28 @@ class Canvas {
         this.cv.addEventListener('keydown', this.directionDown, false);
         this.cv.addEventListener('touchstart', this.touchInput, false);
         this.cv.addEventListener('touchmove', this.touchInput, false);
+
+        this.cv.addEventListener("mousedown", this.mouseDown, false);
+        this.cv.addEventListener("mouseup", this.mouseUp, false);
         this.cv.parent = self;
         global.canvas = this;
+    }
+
+    mouseDown(event) {
+        var self = this.parent;
+        
+        var pos = { x: event.clientX, y: event.clientY };
+        
+        //normalize vector
+        var dist = Math.sqrt(pos.x * pos.x + pos.y * pos.y);
+        pos.x /= dist;
+        pos.y /= dist;
+
+        console.log(pos);
+        self.socket.emit("shooting", pos);
+    }
+    mouseUp(event) {
+
     }
 
     // Function called when a key is pressed, will change direction if arrow key.

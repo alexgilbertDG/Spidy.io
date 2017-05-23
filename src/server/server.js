@@ -26,6 +26,7 @@ var users = [];
 var massFood = [];
 var food = [];
 var node = [];
+var spiderWeb = [];
 
 var sockets = {};
 
@@ -473,6 +474,30 @@ io.on('connection', function (socket) {
             currentPlayer.lastSplit = new Date().getTime();
         }
     });
+
+    //called when a player starts shooting web
+    socket.on("shooting", function(direction) {
+
+        //check if the player is currently shooting web
+        for(var i=0; i<spiderWeb.length; i++) {
+            var w = spiderWeb[i];
+            if(w.player == currentPlayer){
+                return;
+            }
+        }
+
+        //if he is not then add to the spider web array
+        spiderWeb.push({
+            player: currentPlayer, 
+            dir: direction,
+            endPoint: {
+                x: currentPlayer.x + 10 * direction.x,
+                y: currentPlayer.y + 10 * direction.y
+            },
+            isReturning: false,
+            holding: null
+        });
+    });
 });
 
 function tickPlayer(currentPlayer) {
@@ -731,8 +756,28 @@ function sendUpdates() {
             .filter(function (f) {
                 return f;
             });
+        
+        var visibleSpiderWeb = spiderWeb
+            .map(function(w){
+                if ((
+                    w.player.x > u.x - u.screenWidth / 2 - 20 &&
+                    w.player.x < u.x + u.screenWidth / 2 + 20 &&
+                    w.player.y > u.y - u.screenHeight / 2 - 20 &&
+                    w.player.y < u.y + u.screenHeight / 2 + 20
+                    ) || (
+                    w.endPoint.x > u.x - u.screenWidth / 2 - 20 &&
+                    w.endPoint.x < u.x + u.screenWidth / 2 + 20 &&
+                    w.endPoint.y > u.y - u.screenHeight / 2 - 20 &&
+                    w.endPoint.y < u.y + u.screenHeight / 2 + 20)){
+                    return w;
+                }
+            })
+            .filter(function(w){
+                return w;
+            });
+        
 
-        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleFood, visibleMass, visibleNode);
+        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleFood, visibleMass, visibleNode, visibleSpiderWeb);
         if (leaderboardChanged) {
             sockets[u.id].emit('leaderboard', {
                 players: users.length,
