@@ -21,6 +21,12 @@ module.exports = {
     nodeSides: 10,
     virusSides: 20,
 
+    //Game
+    users : [],
+    nodes : [],
+    spiderWeb : [],
+    socket:null,
+
     // Canvas
     screenWidth: window.innerWidth,
     screenHeight: window.innerHeight,
@@ -38,4 +44,9 @@ module.exports = {
     cursor: {x:0,y:0,r:10},
     backgroundColor: '#f2fbff',
     lineColor: '#000000',
+    debug : function (args) {
+    if (console && console.log) {
+        console.log(args);
+        }
+    }
 };

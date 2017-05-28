@@ -1,9 +1,9 @@
 module.exports = {
-    entry: "./src/client/js/app.js",
+    entry: "./src/client/js/game.js",
     output: {
         path: require("path").resolve("./src/bin/client/js"),
-        library: "app",
-        filename: "app.js"
+        library: "game",
+        filename: "game.js"
     },
     module: {
         loaders: [

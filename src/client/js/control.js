@@ -1,11 +1,11 @@
 var global = require('./global');
 
-class Canvas {
-    constructor(params) {
+class Control {
+    constructor() {
         this.directionLock = false;
         this.target = global.target;
         this.reenviar = true;
-        this.socket = global.socket;
+
         this.directions = [];
         var self = this;
 
@@ -22,8 +22,30 @@ class Canvas {
         this.cv.addEventListener('keydown', this.directionDown, false);
         this.cv.addEventListener('touchstart', this.touchInput, false);
         this.cv.addEventListener('touchmove', this.touchInput, false);
+
+        this.cv.addEventListener("mousedown", this.mouseDown, false);
+        this.cv.addEventListener("mouseup", this.mouseUp, false);
         this.cv.parent = self;
-        global.canvas = this;
+        global.control = this;
+    }
+
+    mouseDown(event) {
+        var self = this.parent;
+        
+        var pos = { x: event.clientX - this.width/2, y: event.clientY - this.height/2};
+
+        //normalize vector
+        var dist = Math.sqrt(pos.x * pos.x + pos.y * pos.y);
+        pos.x /= dist;
+        pos.y /= dist;
+
+        console.log(pos);
+        if (global.socket) {
+            global.socket.emit("shooting", pos);
+        }
+    }
+    mouseUp(event) {
+
     }
 
     // Function called when a key is pressed, will change direction if arrow key.
@@ -34,7 +56,8 @@ class Canvas {
     		self.directionLock = true;
     		if (self.newDirection(key, self.directions, true)) {
     			self.updateTarget(self.directions);
-    			self.socket.emit('0', self.target);
+    			console.log(self.target);
+    			global.socket.emit('0', self.target);
     		}
     	}
     }
@@ -46,7 +69,8 @@ class Canvas {
     		if (this.newDirection(key, this.directions, false)) {
     			this.updateTarget(this.directions);
     			if (this.directions.length === 0) this.directionLock = false;
-    			this.socket.emit('0', this.target);
+    			console.log(this.target);
+    			global.socket.emit('0', this.target);
     		}
     	}
     }
@@ -148,4 +172,4 @@ class Canvas {
     }
 }
 
-module.exports = Canvas;
+module.exports = Control;
