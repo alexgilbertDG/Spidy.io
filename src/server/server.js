@@ -25,6 +25,7 @@ var tree = quadtree(0, 0, c.gameWidth, c.gameHeight);
 var users = [];
 var node = [];
 var spiderWeb = [];
+var connectWeb = [];
 
 var sockets = {};
 
@@ -235,13 +236,13 @@ io.on('connection', function (socket) {
         currentPlayer.lastHeartbeat = new Date().getTime();
         if (target.x !== currentPlayer.x || target.y !== currentPlayer.y) {
             currentPlayer.target = target;
-            console.log(target);
         }
     });
 
 
     //called when a player starts shooting web
     socket.on("shooting", function(direction) {
+         currentPlayer.lastHeartbeat = new Date().getTime();
 
         //check if the player is currently shooting web
         for(var i=0; i<spiderWeb.length; i++) {
@@ -250,6 +251,7 @@ io.on('connection', function (socket) {
                 return;
             }
         }
+
 
         //if he is not then add to the spider web array
         spiderWeb.push({
@@ -262,6 +264,30 @@ io.on('connection', function (socket) {
             isReturning: false,
             holding: null
         });
+
+        console.log(direction);
+
+
+
+        let dirX = Math.round( direction.x * 100 / c.gridGap) * c.gridGap;
+        let dirY = Math.round( direction.y * 100 / c.gridGap) * c.gridGap;
+        console.log(dirX);
+        console.log(dirY);
+
+        //return closest node point on the grid
+        let closest = {x: Math.round(currentPlayer.x / c.gridGap) *c.gridGap , y: Math.round(currentPlayer.y / c.gridGap) *c.gridGap};
+        let farthest = {x: (Math.round((currentPlayer.x+10 * direction.x) / c.gridGap) *c.gridGap) + dirX , y: (Math.round((currentPlayer.y+10  * direction.y) / c.gridGap) *c.gridGap) + dirY};
+
+
+        connectWeb.push({
+            player: currentPlayer,
+            nodes : [closest, farthest]
+        });
+        console.log(closest);
+        console.log(farthest);
+
+
+
     });
 });
 
@@ -411,9 +437,6 @@ function tickPlayer(currentPlayer) {
         );
 
 
-
-
-
         if (typeof(currentCell.speed) == "undefined")
             currentCell.speed = 6.25;
         currentCell.radius = util.massToRadius(currentCell.mass);
@@ -529,6 +552,26 @@ function sendUpdates() {
                 return w;
             });
 
+
+        var visibleConnectWeb = connectWeb
+            .map(function(w){
+                if ((
+                    w.nodes[0].x > u.x - u.screenWidth / 2 - 20 &&
+                    w.nodes[0].x < u.x + u.screenWidth / 2 + 20 &&
+                    w.nodes[0].y > u.y - u.screenHeight / 2 - 20 &&
+                    w.nodes[0].y < u.y + u.screenHeight / 2 + 20
+                    ) || (
+                    w.nodes[1].x > u.x - u.screenWidth / 2 - 20 &&
+                    w.nodes[1].x < u.x + u.screenWidth / 2 + 20 &&
+                   w.nodes[1].y > u.y - u.screenHeight / 2 - 20 &&
+                    w.nodes[1].y < u.y + u.screenHeight / 2 + 20)){
+                    return w;
+                }
+            })
+            .filter(function(w){
+                return w;
+            });
+
         var visibleCells = users
             .map(function (f) {
                 for (var z = 0; z < f.cells.length; z++) {
@@ -564,7 +607,7 @@ function sendUpdates() {
             });
 
 
-        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleNode, visibleSpiderWeb);
+        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleNode, visibleSpiderWeb, visibleConnectWeb);
         if (leaderboardChanged) {
             sockets[u.id].emit('leaderboard', {
                 players: users.length,

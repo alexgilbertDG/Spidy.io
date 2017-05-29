@@ -1,7 +1,6 @@
 const io = require('socket.io-client');
 const global = require('./global');
 
-
 if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
     global.mobile = true;
 }
@@ -49,6 +48,9 @@ new Drawing(window.control.cv.getContext('2d'));
 
 const SocketClient = require('./socketclient');
 var socketClient = new SocketClient();
+
+//const Physics = require('./matter');
+//new Physics().init();
 
 
 class Game {
@@ -140,6 +142,8 @@ class Game {
                 global.nodes.forEach(Drawing.drawNode);
                 Drawing.drawCursor();
                 global.spiderWeb.forEach(Drawing.drawSpiderWeb);
+                Drawing.connectWeb();
+
 
                 if (global.borderDraw) {
                     Drawing.drawBorder();
@@ -159,7 +163,6 @@ class Game {
                 });
 
                 Drawing.drawPlayers(orderMass);
-                console.log(window.control.target);
                 if (window.control.target !== undefined) {
                     global.socket.emit('0', window.control.target); // playerSendTarget "Heartbeat".
                 }

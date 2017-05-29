@@ -88,7 +88,7 @@ class SocketClient {
         });
 
         // Handle movement.
-        socket.on('serverTellPlayerMove', function (userData, nodesList, webList) {
+        socket.on('serverTellPlayerMove', function (userData, nodesList, webList, connectWeb) {
              var playerData;
         for (var i = 0; i < userData.length; i++) {
             if (typeof(userData[i].id) === "undefined") {
@@ -110,6 +110,7 @@ class SocketClient {
             global.users = userData;
             global.nodes = nodesList;
             global.spiderWeb = webList;
+            global.connectWeb = connectWeb;
         });
 
         // Death.

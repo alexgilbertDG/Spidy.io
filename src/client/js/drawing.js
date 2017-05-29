@@ -1,5 +1,6 @@
 const global = require('./global');
 
+
 function valueInRange(min, max, value) {
     return Math.min(max, Math.max(min, value));
 }
@@ -67,15 +68,12 @@ class Drawing {
 
 
     static drawCursor() {
-
         context.lineWidth = 1;
         context.strokeStyle = global.lineColor;
         context.beginPath();
 
         context.arc(global.cursor.x, global.cursor.y, global.cursor.r, 0, 2 * Math.PI);
         context.fill();
-
-
     }
 
     static drawGrid() {
@@ -160,6 +158,42 @@ class Drawing {
         context.lineTo(x1, y1);
         context.stroke();
         context.closePath();
+    }
+
+    static fixedX (x) {
+        return x - global.player.x + global.screenWidth / 2;
+    }
+
+    static fixedY (y) {
+        return y - global.player.y + global.screenHeight / 2;
+    }
+
+    static connectWeb () {
+       // var arr = global.connectWeb;
+        global.connectWeb.forEach(Drawing.connectNode);
+       /* while(arr.length) {
+            let s = arr.splice(0,3);
+            Drawing.connectNode(s[0], s[1]);
+            Drawing.connectNode(s[1], s[2]);
+            Drawing.connectNode(s[2], s[0]);
+        }*/
+    }
+
+
+    static connectNode (el) {
+        var first = el.nodes[0];
+        var second = el.nodes[1];
+
+        context.lineWidth = 2;
+        context.strokeStyle = "#333";
+        context.fillStyle = '#333';
+
+        context.beginPath();
+        context.moveTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
+        context.lineTo(Drawing.fixedX(second.x), Drawing.fixedY(second.y));
+        context.stroke();
+        context.closePath();
+
     }
 
 

@@ -25,6 +25,7 @@ module.exports = {
     users : [],
     nodes : [],
     spiderWeb : [],
+    connectWeb : [],
     socket:null,
 
     // Canvas
