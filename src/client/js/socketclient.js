@@ -87,15 +87,20 @@ class SocketClient {
 
         });
 
+         socket.on('receiveShootingNode', function (pos) {
+             this.player.webAttach = pos;
+         });
+
+
         // Handle movement.
         socket.on('serverTellPlayerMove', function (userData, nodesList, webList, connectWeb) {
-             var playerData;
-        for (var i = 0; i < userData.length; i++) {
-            if (typeof(userData[i].id) === "undefined") {
-                playerData = userData[i];
-                i = userData.length;
+            var playerData;
+            for (var i = 0; i < userData.length; i++) {
+                if (typeof(userData[i].id) === "undefined") {
+                    playerData = userData[i];
+                    i = userData.length;
+                }
             }
-        }
 
             var xoffset = this.player.x - playerData.x;
             var yoffset = this.player.y - playerData.y;
@@ -106,6 +111,7 @@ class SocketClient {
             this.player.massTotal = playerData.massTotal;
             this.player.xoffset = isNaN(xoffset) ? 0 : xoffset;
             this.player.yoffset = isNaN(yoffset) ? 0 : yoffset;
+            global.player = this.player;
 
             global.users = userData;
             global.nodes = nodesList;

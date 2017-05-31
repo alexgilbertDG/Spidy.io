@@ -1,4 +1,5 @@
 const global = require('./global');
+const _ = require('lodash');
 
 
 function valueInRange(min, max, value) {
@@ -168,22 +169,40 @@ class Drawing {
         return y - global.player.y + global.screenHeight / 2;
     }
 
-    static connectNode (el) {
-        var first = el.nodes[0];
-        var second = el.nodes[1];
-        var third = el.nodes[2];
-
+    static shootedWeb () {
+        if (global.player.webAttach === null) return;
         context.lineWidth = 2;
         context.strokeStyle = "#333";
         context.fillStyle = '#333';
 
         context.beginPath();
-        context.moveTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
-        context.lineTo(Drawing.fixedX(second.x), Drawing.fixedY(second.y));
-        context.lineTo(Drawing.fixedX(third.x), Drawing.fixedY(third.y));
-        context.lineTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
+        context.moveTo(Drawing.fixedX(global.player.x), Drawing.fixedY(global.player.y));
+        context.lineTo(Drawing.fixedX(global.player.webAttach.x), Drawing.fixedY(global.player.webAttach.y));
         context.stroke();
         context.closePath();
+    }
+
+    static connectNode (arr) {
+        arr.map((player)=>{
+            let arr3 = _.chunk(player.nodes, 3);
+            arr3.map((el)=>{
+                var first = el[0];
+                var second = el[1];
+                var third = el[2];
+
+                context.lineWidth = 2;
+                context.strokeStyle = "#333";
+                context.fillStyle = '#333';
+
+                context.beginPath();
+                context.moveTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
+                context.lineTo(Drawing.fixedX(second.x), Drawing.fixedY(second.y));
+                context.lineTo(Drawing.fixedX(third.x), Drawing.fixedY(third.y));
+                context.lineTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
+                context.stroke();
+                context.closePath();
+            });
+        });
 
     }
 

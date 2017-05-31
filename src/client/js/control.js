@@ -6,6 +6,9 @@ class Control {
         this.target = global.target;
         this.reenviar = true;
 
+        this.mouseTimer = 0;
+        this.mouseTimerID = -1;
+
         this.directions = [];
         var self = this;
 
@@ -30,6 +33,7 @@ class Control {
     }
 
     mouseDown(event) {
+        this.mouseTimer = 0;
         var self = this.parent;
         
         var pos = { x: event.clientX - this.width/2, y: event.clientY - this.height/2};
@@ -41,11 +45,24 @@ class Control {
 
         console.log(pos);
         if (global.socket) {
-            global.socket.emit("shooting", pos);
+            global.socket.emit("shooting", pos, { x: event.clientX - this.width/2, y: event.clientY - this.height/2});
         }
+
+        this.mouseTimerID = setInterval(() => this.mouseTimer++, 10);
     }
     mouseUp(event) {
+        console.log('mouse UP');
+         console.log(this.mouseTimer);
+        clearInterval(this.mouseTimerID);
+        if (global.player.webAttach !== null && this.mouseTimer > 20) {
+             console.log('mouseUPShooting');
+            global.socket.emit("mouseUPShooting");
+        } else {
+             console.log('deleteWebAttach');
+            global.socket.emit("deleteWebAttach");
+        }
 
+        this.mouseTimer = 0;
     }
 
     // Function called when a key is pressed, will change direction if arrow key.
@@ -56,7 +73,6 @@ class Control {
     		self.directionLock = true;
     		if (self.newDirection(key, self.directions, true)) {
     			self.updateTarget(self.directions);
-    			console.log(self.target);
     			global.socket.emit('0', self.target);
     		}
     	}
@@ -69,7 +85,6 @@ class Control {
     		if (this.newDirection(key, this.directions, false)) {
     			this.updateTarget(this.directions);
     			if (this.directions.length === 0) this.directionLock = false;
-    			console.log(this.target);
     			global.socket.emit('0', this.target);
     		}
     	}

@@ -142,7 +142,8 @@ class Game {
                 global.nodes.forEach(Drawing.drawNode);
                 Drawing.drawCursor();
                 global.spiderWeb.forEach(Drawing.drawSpiderWeb);
-                global.connectWeb.forEach(Drawing.connectNode);
+                Drawing.connectNode(global.connectWeb);
+                Drawing.shootedWeb();
 
 
                 if (global.borderDraw) {
@@ -173,9 +174,9 @@ class Game {
         } else {
             if (global.kicked) {
                 Drawing.gameOver('You were kicked out!');
+
             } else {
                 Drawing.gameOver('Disconnected!');
-
             }
         }
     }

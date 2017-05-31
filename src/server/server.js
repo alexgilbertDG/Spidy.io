@@ -87,7 +87,7 @@ io.on('connection', function (socket) {
         h: c.defaultPlayerMass,
         cells: [],
         massTotal: c.defaultPlayerMass,
-        webAttach : {},
+        webAttach : null,
         hue: Math.round(Math.random() * 360),
         lastHeartbeat: new Date().getTime(),
         target: {
@@ -196,6 +196,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('kick', function (data) {
+        removePlayerWeb(currentPlayer);
         if (currentPlayer.admin) {
             var reason = '';
             var worked = false;
@@ -241,25 +242,57 @@ io.on('connection', function (socket) {
         }
     });
 
-       socket.on("shootingConnect", function () {
+    socket.on("mouseUPShooting", function () {
+        if (currentPlayer.webAttach === null) return;
 
-            let closest = {
-                x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
-                y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
+      //  let dirX = Math.round(direction.x * 100 / c.gridGap) * c.gridGap;
+       // let dirY = Math.round(direction.y * 100 / c.gridGap) * c.gridGap;
+       // console.log(dirX);
+       // console.log(dirY);
+        //let middle = {
+          //  x: (closest.x + currentPlayer.webAttach.x) > c.gameWidth ? closest.x - currentPlayer.webAttach.x : closest.x + currentPlayer.webAttach.x,
+          //  y: closest.y
+       // };
+
+
+        //return closest node point on the grid
+        let closest = {
+            x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
+            y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
+        };
+
+
+        let middle = {
+            x: currentPlayer.webAttach.x,
+            y: closest.y
+        };
+
+        if (_.isEqual(middle, closest) || _.isEqual(middle, currentPlayer.webAttach)) {
+            middle = {
+                x: Math.floor(currentPlayer.x / c.gridGap) * c.gridGap,
+                y: Math.ceil(currentPlayer.webAttach.y / c.gridGap) * c.gridGap,
             };
-            let middle = {};
+        }
 
-            connectWeb.push({
-                player: currentPlayer,
-                nodes: [closest, currentPlayer.webAttach, middle]
-            });
+        connectWeb.map((el) => {
+            if (el.player.id === currentPlayer.id) {
+                el.nodes.push(closest, middle, currentPlayer.webAttach);
+            }
+        });
+        console.log(connectWeb[0].nodes);
 
-            currentPlayer.webAttach = {};
-       });
+        currentPlayer.webAttach = null;
+        sockets[currentPlayer.id].emit("receiveShootingNode", null);
+    });
+
+    socket.on("deleteWebAttach", function () {
+        currentPlayer.webAttach = null;
+        sockets[currentPlayer.id].emit("receiveShootingNode", null);
+    });
 
 
     //called when a player starts shooting web
-    socket.on("shooting", function (direction) {
+    socket.on("shooting", function (direction, dist) {
         currentPlayer.lastHeartbeat = new Date().getTime();
 
         //check if the player is currently shooting web
@@ -270,8 +303,11 @@ io.on('connection', function (socket) {
             }
         }
 
+        let position = {
+            x: Math.round((currentPlayer.x + dist.x) / c.gridGap) * c.gridGap,
+            y: Math.round((currentPlayer.y + dist.y) / c.gridGap) * c.gridGap
+        };
 
-        //if he is not then add to the spider web array
         spiderWeb.push({
             player: currentPlayer,
             dir: direction,
@@ -283,54 +319,14 @@ io.on('connection', function (socket) {
             holding: null
         });
 
-        console.log(direction);
-
-
-        let dirX = Math.round(direction.x * 100 / c.gridGap) * c.gridGap;
-        let dirY = Math.round(direction.y * 100 / c.gridGap) * c.gridGap;
-        console.log(dirX);
-        console.log(dirY);
-
-        //return closest node point on the grid
-        let closest = {
-            x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
-            y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
-        };
-        let farthest = {
-            x: (Math.round((currentPlayer.x + 10 * direction.x) / c.gridGap) * c.gridGap) + dirX,
-            y: (Math.round((currentPlayer.y + 10 * direction.y) / c.gridGap) * c.gridGap) + dirY
-        };
-
-        let middle = {
-            x: (closest.x + dirX) > c.gameWidth ? closest.x - dirX : closest.x + dirX,
-            y: closest.y
-        };
-
-        if (_.isEqual(middle, closest) || _.isEqual(middle, farthest)) {
-            middle = {
-                x: (farthest.x + dirX) > c.gameWidth ? farthest.x - dirX : farthest.x + dirX,
-                y: farthest.y
-            };
-        }
-
-        currentPlayer.webAttach = farthest;
-
-
-        connectWeb.push({
-            player: currentPlayer,
-            nodes: [closest, middle, farthest]
-        });
-        console.log(closest);
-        console.log(middle);
-        console.log(farthest);
-
-
+        currentPlayer.webAttach = position;
+        sockets[currentPlayer.id].emit("receiveShootingNode", position);
     });
 });
 
 function removePlayerWeb(player) {
-    connectWeb.filter((el) => {
-        return el.player.id !== player;
+    connectWeb = connectWeb.filter((web)=> {
+         return web.player.id !== player.id;
     });
 }
 
@@ -338,11 +334,18 @@ function initWebPosition(player) {
     let myGap = c.gridGap;
     let x = myGap;
     let y = myGap;
+    let idx = 0;
     for (var i = 0; i < 4; i++) {
-        connectWeb.push({
-            player: player,
-            nodes: [{x: player.x - x, y: player.y}, {x: player.x, y: player.y}, {x: player.x, y: player.y - y}]
-        });
+
+        if (i === 0) {
+            connectWeb.push({
+                player: player,
+                nodes: [{x: player.x - x, y: player.y}, {x: player.x, y: player.y}, {x: player.x, y: player.y - y}]
+            });
+            idx = connectWeb.length-1;
+        } else {
+            connectWeb[idx].nodes.push({x: player.x - x, y: player.y}, {x: player.x, y: player.y}, {x: player.x, y: player.y - y});
+        }
 
         x = -x;
         y = -y;
