@@ -247,6 +247,7 @@ io.on('connection', function (socket) {
                 x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
                 y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
             };
+            let middle = {};
 
             connectWeb.push({
                 player: currentPlayer,
