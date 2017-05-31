@@ -7,6 +7,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var SAT = require('sat');
 var sql = require("mysql");
+var _ = require("lodash");
 
 // Import game settings.
 var c = require('../../config.json');
@@ -57,7 +58,7 @@ app.use(express.static(__dirname + '/../client'));
 function addNode() {
     var grid = util.gridPosition();
     var radius = 10;
-    for (var i=0;i<grid.length;i++) {
+    for (var i = 0; i < grid.length; i++) {
         node.push({
             // Make IDs unique.
             id: ((new Date()).getTime()),
@@ -67,12 +68,8 @@ function addNode() {
             mass: 10,
             hue: 0
         });
-
     }
 }
-
-
-
 
 
 io.on('connection', function (socket) {
@@ -90,6 +87,7 @@ io.on('connection', function (socket) {
         h: c.defaultPlayerMass,
         cells: [],
         massTotal: c.defaultPlayerMass,
+        webAttach : {},
         hue: Math.round(Math.random() * 360),
         lastHeartbeat: new Date().getTime(),
         target: {
@@ -125,7 +123,7 @@ io.on('connection', function (socket) {
                 y: position.y,
                 radius: radius
             }];
-                player.massTotal = c.defaultPlayerMass;
+            player.massTotal = c.defaultPlayerMass;
 
 
             player.hue = Math.round(Math.random() * 360);
@@ -133,6 +131,8 @@ io.on('connection', function (socket) {
             currentPlayer.lastHeartbeat = new Date().getTime();
             users.push(currentPlayer);
             addNode();
+            initWebPosition(currentPlayer);
+
 
             io.emit('playerJoin', {name: currentPlayer.name});
 
@@ -167,6 +167,8 @@ io.on('connection', function (socket) {
         console.log('[INFO] User ' + currentPlayer.name + ' disconnected!');
 
         socket.broadcast.emit('playerDisconnect', {name: currentPlayer.name});
+
+        removePlayerWeb(currentPlayer);
     });
 
     socket.on('playerChat', function (data) {
@@ -239,15 +241,30 @@ io.on('connection', function (socket) {
         }
     });
 
+       socket.on("shootingConnect", function () {
+
+            let closest = {
+                x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
+                y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
+            };
+
+            connectWeb.push({
+                player: currentPlayer,
+                nodes: [closest, currentPlayer.webAttach, middle]
+            });
+
+            currentPlayer.webAttach = {};
+       });
+
 
     //called when a player starts shooting web
-    socket.on("shooting", function(direction) {
-         currentPlayer.lastHeartbeat = new Date().getTime();
+    socket.on("shooting", function (direction) {
+        currentPlayer.lastHeartbeat = new Date().getTime();
 
         //check if the player is currently shooting web
-        for(var i=0; i<spiderWeb.length; i++) {
+        for (var i = 0; i < spiderWeb.length; i++) {
             var w = spiderWeb[i];
-            if(w.player === currentPlayer){
+            if (w.player === currentPlayer) {
                 return;
             }
         }
@@ -268,28 +285,69 @@ io.on('connection', function (socket) {
         console.log(direction);
 
 
-
-        let dirX = Math.round( direction.x * 100 / c.gridGap) * c.gridGap;
-        let dirY = Math.round( direction.y * 100 / c.gridGap) * c.gridGap;
+        let dirX = Math.round(direction.x * 100 / c.gridGap) * c.gridGap;
+        let dirY = Math.round(direction.y * 100 / c.gridGap) * c.gridGap;
         console.log(dirX);
         console.log(dirY);
 
         //return closest node point on the grid
-        let closest = {x: Math.round(currentPlayer.x / c.gridGap) *c.gridGap , y: Math.round(currentPlayer.y / c.gridGap) *c.gridGap};
-        let farthest = {x: (Math.round((currentPlayer.x+10 * direction.x) / c.gridGap) *c.gridGap) + dirX , y: (Math.round((currentPlayer.y+10  * direction.y) / c.gridGap) *c.gridGap) + dirY};
+        let closest = {
+            x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
+            y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
+        };
+        let farthest = {
+            x: (Math.round((currentPlayer.x + 10 * direction.x) / c.gridGap) * c.gridGap) + dirX,
+            y: (Math.round((currentPlayer.y + 10 * direction.y) / c.gridGap) * c.gridGap) + dirY
+        };
+
+        let middle = {
+            x: (closest.x + dirX) > c.gameWidth ? closest.x - dirX : closest.x + dirX,
+            y: closest.y
+        };
+
+        if (_.isEqual(middle, closest) || _.isEqual(middle, farthest)) {
+            middle = {
+                x: (farthest.x + dirX) > c.gameWidth ? farthest.x - dirX : farthest.x + dirX,
+                y: farthest.y
+            };
+        }
+
+        currentPlayer.webAttach = farthest;
 
 
         connectWeb.push({
             player: currentPlayer,
-            nodes : [closest, farthest]
+            nodes: [closest, middle, farthest]
         });
         console.log(closest);
+        console.log(middle);
         console.log(farthest);
-
 
 
     });
 });
+
+function removePlayerWeb(player) {
+    connectWeb.filter((el) => {
+        return el.player.id !== player;
+    });
+}
+
+function initWebPosition(player) {
+    let myGap = c.gridGap;
+    let x = myGap;
+    let y = myGap;
+    for (var i = 0; i < 4; i++) {
+        connectWeb.push({
+            player: player,
+            nodes: [{x: player.x - x, y: player.y}, {x: player.x, y: player.y}, {x: player.x, y: player.y - y}]
+        });
+
+        x = -x;
+        y = -y;
+        let a = i === 1 ? x = -y : null;
+    }
+}
 
 function movePlayer(player) {
     var x = 0, y = 0;
@@ -372,7 +430,6 @@ function movePlayer(player) {
 }
 
 
-
 function tickPlayer(currentPlayer) {
     if (currentPlayer.lastHeartbeat < new Date().getTime() - c.maxHeartbeatInterval) {
         sockets[currentPlayer.id].emit('kick', 'Last heartbeat received over ' + c.maxHeartbeatInterval + ' ago.');
@@ -380,7 +437,6 @@ function tickPlayer(currentPlayer) {
     }
 
     movePlayer(currentPlayer);
-
 
 
     function check(user) {
@@ -462,7 +518,7 @@ function moveloop() {
         let web = spiderWeb[i];
 
 
-        if(!web.isReturning) {
+        if (!web.isReturning) {
             web.endPoint.x += web.dir.x * c.spiderWebSpeed;
             web.endPoint.y += web.dir.y * c.spiderWebSpeed;
         }
@@ -473,12 +529,12 @@ function moveloop() {
 
         let x = web.endPoint.x - web.player.x;
         let y = web.endPoint.y - web.player.y;
-        let dist = Math.sqrt(x*x + y*y);
-        if(web.isReturning && dist < 20) {
+        let dist = Math.sqrt(x * x + y * y);
+        if (web.isReturning && dist < 20) {
             spiderWeb.splice(i, 1);
             i--;
         }
-        else if(dist > c.spiderWebRange) {
+        else if (dist > c.spiderWebRange) {
             web.isReturning = true;
         }
 
@@ -495,10 +551,10 @@ function gameloop() {
 
         for (var i = 0; i < Math.min(10, users.length); i++) {
 
-                topUsers.push({
-                    id: users[i].id,
-                    name: users[i].name
-                });
+            topUsers.push({
+                id: users[i].id,
+                name: users[i].name
+            });
 
         }
         if (isNaN(leaderboard) || leaderboard.length !== topUsers.length) {
@@ -534,41 +590,37 @@ function sendUpdates() {
             });
 
         var visibleSpiderWeb = spiderWeb
-            .map(function(w){
-                if ((
-                    w.player.x > u.x - u.screenWidth / 2 - 20 &&
-                    w.player.x < u.x + u.screenWidth / 2 + 20 &&
-                    w.player.y > u.y - u.screenHeight / 2 - 20 &&
-                    w.player.y < u.y + u.screenHeight / 2 + 20
+            .map(function (w) {
+                if ((w.player.x > u.x - u.screenWidth / 2 - 20 &&
+                        w.player.x < u.x + u.screenWidth / 2 + 20 &&
+                        w.player.y > u.y - u.screenHeight / 2 - 20 &&
+                        w.player.y < u.y + u.screenHeight / 2 + 20
                     ) || (
                     w.endPoint.x > u.x - u.screenWidth / 2 - 20 &&
                     w.endPoint.x < u.x + u.screenWidth / 2 + 20 &&
                     w.endPoint.y > u.y - u.screenHeight / 2 - 20 &&
-                    w.endPoint.y < u.y + u.screenHeight / 2 + 20)){
+                    w.endPoint.y < u.y + u.screenHeight / 2 + 20)) {
                     return w;
                 }
             })
-            .filter(function(w){
+            .filter(function (w) {
                 return w;
             });
 
 
         var visibleConnectWeb = connectWeb
-            .map(function(w){
-                if ((
-                    w.nodes[0].x > u.x - u.screenWidth / 2 - 20 &&
-                    w.nodes[0].x < u.x + u.screenWidth / 2 + 20 &&
-                    w.nodes[0].y > u.y - u.screenHeight / 2 - 20 &&
-                    w.nodes[0].y < u.y + u.screenHeight / 2 + 20
-                    ) || (
-                    w.nodes[1].x > u.x - u.screenWidth / 2 - 20 &&
-                    w.nodes[1].x < u.x + u.screenWidth / 2 + 20 &&
-                   w.nodes[1].y > u.y - u.screenHeight / 2 - 20 &&
-                    w.nodes[1].y < u.y + u.screenHeight / 2 + 20)){
-                    return w;
-                }
+            .map(function (w) {
+                w.nodes.map((el) => {
+                    if (el.x > u.x - u.screenWidth / 2 - 20 &&
+                        el.x < u.x + u.screenWidth / 2 + 20 &&
+                        el.y > u.y - u.screenHeight / 2 - 20 &&
+                        el.y < u.y + u.screenHeight / 2 + 20) {
+                        return el;
+                    }
+                });
+                return w;
             })
-            .filter(function(w){
+            .filter(function (w) {
                 return w;
             });
 

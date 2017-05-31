@@ -142,7 +142,7 @@ class Game {
                 global.nodes.forEach(Drawing.drawNode);
                 Drawing.drawCursor();
                 global.spiderWeb.forEach(Drawing.drawSpiderWeb);
-                Drawing.connectWeb();
+                global.connectWeb.forEach(Drawing.connectNode);
 
 
                 if (global.borderDraw) {

@@ -168,21 +168,10 @@ class Drawing {
         return y - global.player.y + global.screenHeight / 2;
     }
 
-    static connectWeb () {
-       // var arr = global.connectWeb;
-        global.connectWeb.forEach(Drawing.connectNode);
-       /* while(arr.length) {
-            let s = arr.splice(0,3);
-            Drawing.connectNode(s[0], s[1]);
-            Drawing.connectNode(s[1], s[2]);
-            Drawing.connectNode(s[2], s[0]);
-        }*/
-    }
-
-
     static connectNode (el) {
         var first = el.nodes[0];
         var second = el.nodes[1];
+        var third = el.nodes[2];
 
         context.lineWidth = 2;
         context.strokeStyle = "#333";
@@ -191,6 +180,8 @@ class Drawing {
         context.beginPath();
         context.moveTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
         context.lineTo(Drawing.fixedX(second.x), Drawing.fixedY(second.y));
+        context.lineTo(Drawing.fixedX(third.x), Drawing.fixedY(third.y));
+        context.lineTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
         context.stroke();
         context.closePath();
 

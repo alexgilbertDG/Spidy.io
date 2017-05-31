@@ -40,6 +40,14 @@ exports.randomPosition = function (radius) {
     };
 };
 
+
+exports.randomPositionOnGrid = function (radius) {
+    return {
+        x: Math.round(exports.randomInRange(radius, cfg.gameWidth - radius) / cfg.gridGap) * cfg.gridGap,
+        y: Math.round(exports.randomInRange(radius, cfg.gameHeight - radius) / cfg.gridGap) * cfg.gridGap
+    };
+};
+
 exports.gridPosition = function() {
     var finalGrid = [];
     for (var x = 0; x < cfg.gameWidth; x += cfg.gridGap) {
@@ -58,13 +66,13 @@ exports.uniformPosition = function(points, radius) {
     var numberOfCandidates = 10;
 
     if (points.length === 0) {
-        return exports.randomPosition(radius);
+        return exports.randomPositionOnGrid(radius);
     }
 
     // Generate the cadidates
     for (var ci = 0; ci < numberOfCandidates; ci++) {
         var minDistance = Infinity;
-        var candidate = exports.randomPosition(radius);
+        var candidate = exports.randomPositionOnGrid(radius);
         candidate.radius = radius;
 
         for (var pi = 0; pi < points.length; pi++) {
@@ -78,7 +86,7 @@ exports.uniformPosition = function(points, radius) {
             bestCandidate = candidate;
             maxDistance = minDistance;
         } else {
-            return exports.randomPosition(radius);
+            return exports.randomPositionOnGrid(radius);
         }
     }
 
