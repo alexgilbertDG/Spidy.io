@@ -1,5 +1,19 @@
 const global = require('./global');
-const _ = require('lodash');
+
+const _ = {
+    chunk: function chunk(array, size) {
+        var chunks = [],
+            i = 0,
+            n = array.length;
+
+        while (i < n) {
+            chunks.push(array.slice(i, i += size));
+        }
+
+        return chunks;
+    }
+};
+
 
 
 function valueInRange(min, max, value) {
@@ -227,8 +241,8 @@ class Drawing {
         for (var z = 0; z < order.length; z++) {
             var userCurrent = global.users[order[z].nCell];
             var cellCurrent = userCurrent.cells[order[z].nDiv];
-             context.drawImage(img, (cellCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size/2),
-                 (cellCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size/2));
+            context.drawImage(img, (cellCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size/2),
+                (cellCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size/2));
         }
     }
 

@@ -55,6 +55,13 @@ pool.connect(function (err) {
 app.use(express.static(__dirname + '/../client'));
 
 
+
+Math.dist = function (x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));
+};
+
+
+
 function addNode() {
     var grid = util.gridPosition();
     var radius = 10;
@@ -352,84 +359,126 @@ function initWebPosition(player) {
     }
 }
 
+
+
 function movePlayer(player) {
-    var x = 0, y = 0;
-    for (var i = 0; i < player.cells.length; i++) {
-        var target = {
-            x: player.x - player.cells[i].x + player.target.x,
-            y: player.y - player.cells[i].y + player.target.y
-        };
-        var dist = Math.sqrt(Math.pow(target.y, 2) + Math.pow(target.x, 2));
-        var deg = Math.atan2(target.y, target.x);
-        var slowDown = 1;
-        if (player.cells[i].speed <= 6.25) {
-            slowDown = util.log(player.cells[i].mass, c.slowBase) - initMassLog + 1;
-        }
 
-        var deltaY = player.cells[i].speed * Math.sin(deg) / slowDown;
-        var deltaX = player.cells[i].speed * Math.cos(deg) / slowDown;
+    var target;
+    if (player.webAttach === null) {
 
-        if (player.cells[i].speed > 6.25) {
-            player.cells[i].speed -= 0.5;
-        }
-        if (dist < (50 + player.cells[i].radius)) {
-            deltaY *= dist / (50 + player.cells[i].radius);
-            deltaX *= dist / (50 + player.cells[i].radius);
-        }
-        if (!isNaN(deltaY)) {
-            player.cells[i].y += deltaY;
-        }
-        if (!isNaN(deltaX)) {
-            player.cells[i].x += deltaX;
-        }
-        // Find best solution.
-        for (var j = 0; j < player.cells.length; j++) {
-            if (j != i && player.cells[i] !== undefined) {
+        var x = 0, y = 0;
+        for (var i = 0; i < player.cells.length; i++) {
+             target = {
+                x: player.x - player.cells[i].x + player.target.x,
+                y: player.y - player.cells[i].y + player.target.y
+            };
+            var dist = Math.sqrt(Math.pow(target.y, 2) + Math.pow(target.x, 2));
+            var deg = Math.atan2(target.y, target.x);
+            var slowDown = 1;
+            if (player.cells[i].speed <= 6.25) {
+                slowDown = util.log(player.cells[i].mass, c.slowBase) - initMassLog + 1;
+            }
 
-                var distance = Math.sqrt(Math.pow(player.cells[j].y - player.cells[i].y, 2) + Math.pow(player.cells[j].x - player.cells[i].x, 2));
+            var deltaY = player.cells[i].speed * Math.sin(deg) / slowDown;
+            var deltaX = player.cells[i].speed * Math.cos(deg) / slowDown;
 
-                var radiusTotal = (player.cells[i].radius + player.cells[j].radius);
-                if (distance < radiusTotal) {
-                    if (player.lastSplit > new Date().getTime() - 1000 * c.mergeTimer) {
-                        if (player.cells[i].x < player.cells[j].x) {
-                            player.cells[i].x--;
-                        } else if (player.cells[i].x > player.cells[j].x) {
-                            player.cells[i].x++;
+            if (player.cells[i].speed > 6.25) {
+                player.cells[i].speed -= 0.5;
+            }
+            if (dist < (50 + player.cells[i].radius)) {
+                deltaY *= dist / (50 + player.cells[i].radius);
+                deltaX *= dist / (50 + player.cells[i].radius);
+            }
+            if (!isNaN(deltaY)) {
+                player.cells[i].y += deltaY;
+            }
+            if (!isNaN(deltaX)) {
+                player.cells[i].x += deltaX;
+            }
+            // Find best solution.
+            for (var j = 0; j < player.cells.length; j++) {
+                if (j != i && player.cells[i] !== undefined) {
+
+                    var distance = Math.sqrt(Math.pow(player.cells[j].y - player.cells[i].y, 2) + Math.pow(player.cells[j].x - player.cells[i].x, 2));
+
+                    var radiusTotal = (player.cells[i].radius + player.cells[j].radius);
+                    if (distance < radiusTotal) {
+                        if (player.lastSplit > new Date().getTime() - 1000 * c.mergeTimer) {
+                            if (player.cells[i].x < player.cells[j].x) {
+                                player.cells[i].x--;
+                            } else if (player.cells[i].x > player.cells[j].x) {
+                                player.cells[i].x++;
+                            }
+                            if (player.cells[i].y < player.cells[j].y) {
+                                player.cells[i].y--;
+                            } else if ((player.cells[i].y > player.cells[j].y)) {
+                                player.cells[i].y++;
+                            }
                         }
-                        if (player.cells[i].y < player.cells[j].y) {
-                            player.cells[i].y--;
-                        } else if ((player.cells[i].y > player.cells[j].y)) {
-                            player.cells[i].y++;
+                        else if (distance < radiusTotal / 1.75) {
+                            player.cells[i].mass += player.cells[j].mass;
+                            player.cells[i].radius = util.massToRadius(player.cells[i].mass);
+                            player.cells.splice(j, 1);
                         }
-                    }
-                    else if (distance < radiusTotal / 1.75) {
-                        player.cells[i].mass += player.cells[j].mass;
-                        player.cells[i].radius = util.massToRadius(player.cells[i].mass);
-                        player.cells.splice(j, 1);
                     }
                 }
             }
+            if (player.cells.length > i) {
+                var borderCalc = player.cells[i].radius / 3;
+                if (player.cells[i].x > c.gameWidth - borderCalc) {
+                    player.cells[i].x = c.gameWidth - borderCalc;
+                }
+                if (player.cells[i].y > c.gameHeight - borderCalc) {
+                    player.cells[i].y = c.gameHeight - borderCalc;
+                }
+                if (player.cells[i].x < borderCalc) {
+                    player.cells[i].x = borderCalc;
+                }
+                if (player.cells[i].y < borderCalc) {
+                    player.cells[i].y = borderCalc;
+                }
+                x += player.cells[i].x;
+                y += player.cells[i].y;
+            }
         }
-        if (player.cells.length > i) {
-            var borderCalc = player.cells[i].radius / 3;
-            if (player.cells[i].x > c.gameWidth - borderCalc) {
-                player.cells[i].x = c.gameWidth - borderCalc;
-            }
-            if (player.cells[i].y > c.gameHeight - borderCalc) {
-                player.cells[i].y = c.gameHeight - borderCalc;
-            }
-            if (player.cells[i].x < borderCalc) {
-                player.cells[i].x = borderCalc;
-            }
-            if (player.cells[i].y < borderCalc) {
-                player.cells[i].y = borderCalc;
-            }
-            x += player.cells[i].x;
-            y += player.cells[i].y;
-        }
+        player.x = x / player.cells.length;
+        player.y = y / player.cells.length;
+
+
     }
-    player.x = x / player.cells.length;
-    player.y = y / player.cells.length;
+
+
+        if (player.webAttach !== null) {
+
+        var pos = {x:player.x, y:player.y};
+
+
+        target = {
+                x: player.x - player.cells[0].x + player.target.x,
+                y: 1
+            };
+
+        console.log(target);
+        if (target.x>0) {
+            pos.x+=5;
+        }
+        else if (target.x<0)  {
+            pos.x-=5;
+        }
+
+        if (target.y>0) {
+            pos.y+=6;
+        }
+            //Where r is the radius, cx,cy the origin, and a the angle.
+            var r = Math.dist(player.webAttach.x, player.webAttach.y, player.x, player.y),
+                a = Math.atan2(pos.y - player.webAttach.y, pos.x - player.webAttach.x);
+            player.x = player.webAttach.x + r * Math.cos(a);
+            player.y = player.webAttach.y + r * Math.sin(a);
+            player.cells[0].x = player.x;
+            player.cells[0].y = player.y;
+        }
+
+
 }
 
 
@@ -641,6 +690,7 @@ function sendUpdates() {
                                 x: f.x,
                                 y: f.y,
                                 cells: f.cells,
+                                webAttach:f.webAttach,
                                 massTotal: Math.round(f.massTotal),
                                 hue: f.hue,
                                 name: f.name
@@ -650,6 +700,7 @@ function sendUpdates() {
                                 x: f.x,
                                 y: f.y,
                                 cells: f.cells,
+                                webAttach:f.webAttach,
                                 massTotal: Math.round(f.massTotal),
                                 hue: f.hue,
                             };
