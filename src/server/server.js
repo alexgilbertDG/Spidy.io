@@ -279,7 +279,6 @@ io.on('connection', function (socket) {
                 el.nodes.push(closest, middle, currentPlayer.webAttach);
             }
         });
-        console.log(connectWeb[0].nodes);
 
         currentPlayer.webAttach = null;
         sockets[currentPlayer.id].emit("receiveShootingNode", null);

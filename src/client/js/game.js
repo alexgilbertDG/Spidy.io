@@ -163,7 +163,8 @@ class Game {
                     return obj1.mass - obj2.mass;
                 });
 
-                Drawing.drawPlayers(orderMass);
+                Drawing.drawSvg(orderMass);
+
                 if (window.control.target !== undefined) {
                     global.socket.emit('0', window.control.target); // playerSendTarget "Heartbeat".
                 }

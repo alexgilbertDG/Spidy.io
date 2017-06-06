@@ -218,6 +218,20 @@ class Drawing {
         Drawing.drawCircle(node.x, node.y, node.radius, global.nodeSides, true);
     }
 
+    static drawSvg (order) {
+        var size = 40;
+        var img = new Image(size,size);
+        img.src = "img/spider.png";
+
+
+        for (var z = 0; z < order.length; z++) {
+            var userCurrent = global.users[order[z].nCell];
+            var cellCurrent = userCurrent.cells[order[z].nDiv];
+             context.drawImage(img, (cellCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size/2),
+                 (cellCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size/2));
+        }
+    }
+
     static drawPlayers(order) {
         var start = {
             x: global.player.x - (global.screenWidth / 2),
