@@ -252,14 +252,14 @@ io.on('connection', function (socket) {
     socket.on("mouseUPShooting", function () {
         if (currentPlayer.webAttach === null) return;
 
-      //  let dirX = Math.round(direction.x * 100 / c.gridGap) * c.gridGap;
-       // let dirY = Math.round(direction.y * 100 / c.gridGap) * c.gridGap;
-       // console.log(dirX);
-       // console.log(dirY);
+        //  let dirX = Math.round(direction.x * 100 / c.gridGap) * c.gridGap;
+        // let dirY = Math.round(direction.y * 100 / c.gridGap) * c.gridGap;
+        // console.log(dirX);
+        // console.log(dirY);
         //let middle = {
-          //  x: (closest.x + currentPlayer.webAttach.x) > c.gameWidth ? closest.x - currentPlayer.webAttach.x : closest.x + currentPlayer.webAttach.x,
-          //  y: closest.y
-       // };
+        //  x: (closest.x + currentPlayer.webAttach.x) > c.gameWidth ? closest.x - currentPlayer.webAttach.x : closest.x + currentPlayer.webAttach.x,
+        //  y: closest.y
+        // };
 
 
         //return closest node point on the grid
@@ -332,7 +332,7 @@ io.on('connection', function (socket) {
 
 function removePlayerWeb(player) {
     connectWeb = connectWeb.filter((web)=> {
-         return web.player.id !== player.id;
+        return web.player.id !== player.id;
     });
 }
 
@@ -368,7 +368,7 @@ function movePlayer(player) {
 
         var x = 0, y = 0;
         for (var i = 0; i < player.cells.length; i++) {
-             target = {
+            target = {
                 x: player.x - player.cells[i].x + player.target.x,
                 y: player.y - player.cells[i].y + player.target.y
             };
@@ -448,36 +448,40 @@ function movePlayer(player) {
     }
 
 
-        if (player.webAttach !== null) {
+    if (player.webAttach !== null) {
 
         var pos = {x:player.x, y:player.y};
 
 
         target = {
-                x: player.x - player.cells[0].x + player.target.x,
-                y: 1
-            };
+            x: player.x - player.cells[0].x + player.target.x,
+            y: 1
+        };
 
-        console.log(target);
+        var r = Math.dist(player.webAttach.x, player.webAttach.y, player.x, player.y);
+        //Faster when the spider is under the center point
+        //Slower when he is far away
+        var diffX = Math.abs(player.webAttach.x - pos.x);
+        var value = 10 + (r / 100) + (1 / diffX * 15);
         if (target.x>0) {
-            pos.x+=5;
+            pos.x+=value;
         }
         else if (target.x<0)  {
-            pos.x-=5;
+            pos.x-=value;
         }
 
         if (target.y>0) {
             pos.y+=6;
         }
-            //Where r is the radius, cx,cy the origin, and a the angle.
-            var r = Math.dist(player.webAttach.x, player.webAttach.y, player.x, player.y),
-                a = Math.atan2(pos.y - player.webAttach.y, pos.x - player.webAttach.x);
-            player.x = player.webAttach.x + r * Math.cos(a);
-            player.y = player.webAttach.y + r * Math.sin(a);
-            player.cells[0].x = player.x;
-            player.cells[0].y = player.y;
-        }
 
+
+        //Where r is the radius, cx,cy the origin, and a the angle.
+        var a = Math.atan2(pos.y - player.webAttach.y, pos.x - player.webAttach.x);
+        player.x = player.webAttach.x + r * Math.cos(a);
+        player.y = player.webAttach.y + r * Math.sin(a);
+        player.cells[0].x = player.x;
+        player.cells[0].y = player.y;
+    }
 
 }
 

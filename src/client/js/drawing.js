@@ -241,9 +241,31 @@ class Drawing {
         for (var z = 0; z < order.length; z++) {
             var userCurrent = global.users[order[z].nCell];
             var cellCurrent = userCurrent.cells[order[z].nDiv];
-            context.drawImage(img, (cellCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size/2),
-                (cellCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size/2));
+            if (global.player.webAttach !== null) {
+                var angleInRadians = Math.atan2(global.player.webAttach.y - global.player.y, global.player.webAttach.x - global.player.x);
+
+                var angleInDeg = angleInRadians * 180 / Math.PI;
+                angleInDeg += 90;
+                angleInRadians = angleInDeg *  Math.PI / 180;
+
+                var c = {x: (global.player.webAttach.x - (global.player.x - (global.screenWidth / 2))) - (size/2), y: (global.player.webAttach.y - (global.player.y - (global.screenHeight / 2))) - (size / 2)};
+                var x = (cellCurrent.x - (global.player.x - (global.screenWidth / 2)));
+                var y = (cellCurrent.y - (global.player.y - (global.screenHeight / 2)));
+                Drawing.rotateAndPaintImage(img, angleInRadians, x,y,img.width/2,img.height/2);
+
+            } else {
+                context.drawImage(img, (cellCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size / 2),
+                    (cellCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size / 2));
+            }
         }
+    }
+
+    static rotateAndPaintImage ( image, angleInRad , positionX, positionY, axisX, axisY ) {
+        context.translate( positionX, positionY );
+        context.rotate( angleInRad );
+        context.drawImage( image, -axisX, -axisY );
+        context.rotate( -angleInRad );
+        context.translate( -positionX, -positionY );
     }
 
     static drawPlayers(order) {
