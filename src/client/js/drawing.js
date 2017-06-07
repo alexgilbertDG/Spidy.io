@@ -32,6 +32,7 @@ var playerConfig = {
     defaultSize: 30
 };
 
+
 class Drawing {
     constructor(ctx) {
         context = ctx;
@@ -223,21 +224,26 @@ class Drawing {
             context = window.control.cv.getContext('2d');
         }
 
-        context.strokeStyle = '#000';
-        context.fillStyle = '#000';
+        context.strokeStyle = '#6e6e6e';
+        context.fillStyle = '#6e6e6e';
         context.lineWidth = nodeConfig.border;
         Drawing.drawCircle(node.x, node.y, node.radius, global.nodeSides, true);
     }
 
     static drawSvg(order) {
+
         var size = 40;
         var img = new Image(size, size);
-        img.src = "img/spider.png";
 
         var angleInRadians, angleInDeg, x, y;
         for (var z = 0; z < order.length; z++) {
             var userCurrent = global.users[order[z].nCell];
             var cellCurrent = userCurrent.cells[order[z].nDiv];
+
+            //Grab png for the same hue
+            if (isNaN(userCurrent.hue)) userCurrent.hue = 0;
+            img.src = "img/spider_" + userCurrent.hue + ".png";
+
             if (userCurrent.webAttach !== null) {
                 angleInRadians = Math.atan2(userCurrent.webAttach.y - userCurrent.y, userCurrent.webAttach.x - userCurrent.x);
 
