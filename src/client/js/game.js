@@ -1,5 +1,6 @@
 const io = require('socket.io-client');
 const global = require('./global');
+const $ = require('jquery');
 
 if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
     global.mobile = true;
@@ -143,7 +144,7 @@ class Game {
                 Drawing.drawCursor();
                 global.spiderWeb.forEach(Drawing.drawSpiderWeb);
                 Drawing.connectNode(global.connectWeb);
-                Drawing.shootedWeb();
+
 
 
                 if (global.borderDraw) {
@@ -162,6 +163,8 @@ class Game {
                 orderMass.sort(function (obj1, obj2) {
                     return obj1.mass - obj2.mass;
                 });
+
+                global.users.forEach(Drawing.shootedWeb);
 
                 Drawing.drawSvg(orderMass);
 

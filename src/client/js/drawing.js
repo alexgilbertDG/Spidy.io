@@ -183,15 +183,15 @@ class Drawing {
         return y - global.player.y + global.screenHeight / 2;
     }
 
-    static shootedWeb () {
-        if (global.player.webAttach === null) return;
+    static shootedWeb (player) {
+        if (player.webAttach === null) return;
         context.lineWidth = 2;
         context.strokeStyle = "#333";
         context.fillStyle = '#333';
 
         context.beginPath();
-        context.moveTo(Drawing.fixedX(global.player.x), Drawing.fixedY(global.player.y));
-        context.lineTo(Drawing.fixedX(global.player.webAttach.x), Drawing.fixedY(global.player.webAttach.y));
+        context.moveTo(Drawing.fixedX(player.x), Drawing.fixedY(player.y));
+        context.lineTo(Drawing.fixedX(player.webAttach.x), Drawing.fixedY(player.webAttach.y));
         context.stroke();
         context.closePath();
     }
@@ -237,23 +237,22 @@ class Drawing {
         var img = new Image(size,size);
         img.src = "img/spider.png";
 
-
+        var angleInRadians, angleInDeg,x, y;
         for (var z = 0; z < order.length; z++) {
             var userCurrent = global.users[order[z].nCell];
             var cellCurrent = userCurrent.cells[order[z].nDiv];
-            if (global.player.webAttach !== null) {
-                var angleInRadians = Math.atan2(global.player.webAttach.y - global.player.y, global.player.webAttach.x - global.player.x);
+            if (userCurrent.webAttach !== null) {
+                angleInRadians = Math.atan2(userCurrent.webAttach.y - userCurrent.y, userCurrent.webAttach.x - userCurrent.x);
 
-                var angleInDeg = angleInRadians * 180 / Math.PI;
+                angleInDeg = angleInRadians * 180 / Math.PI;
                 angleInDeg += 90;
                 angleInRadians = angleInDeg *  Math.PI / 180;
 
-                var c = {x: (global.player.webAttach.x - (global.player.x - (global.screenWidth / 2))) - (size/2), y: (global.player.webAttach.y - (global.player.y - (global.screenHeight / 2))) - (size / 2)};
-                var x = (cellCurrent.x - (global.player.x - (global.screenWidth / 2)));
-                var y = (cellCurrent.y - (global.player.y - (global.screenHeight / 2)));
-                Drawing.rotateAndPaintImage(img, angleInRadians, x,y,img.width/2,img.height/2);
+                x = (cellCurrent.x - (global.player.x - (global.screenWidth / 2)));
+                y = (cellCurrent.y - (global.player.y - (global.screenHeight / 2)));
+                Drawing.rotateAndPaintImage(img, angleInRadians, x,y, img.width/2,img.height/2);
 
-            } else {
+            }  else {
                 context.drawImage(img, (cellCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size / 2),
                     (cellCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size / 2));
             }
