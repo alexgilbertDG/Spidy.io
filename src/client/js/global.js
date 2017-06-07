@@ -13,7 +13,7 @@ module.exports = {
     KEY_UP_W: 87,
     KEY_RIGHT_D: 68,
     KEY_DOWN_S: 83,
-    borderDraw: false,
+    borderDraw: true,
     spin: -Math.PI,
     enemySpin: -Math.PI,
     mobile: false,
