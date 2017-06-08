@@ -16,6 +16,8 @@ var player = {
 };
 
 
+
+
 var visibleBorderSetting = document.getElementById('visBord');
 visibleBorderSetting.onchange = settings.toggleBorder;
 
@@ -140,7 +142,6 @@ class Game {
 
                 Drawing.clear();
                 Drawing.drawGrid();
-                global.nodes.forEach(Drawing.drawNode);
                 Drawing.drawCursor();
                 global.spiderWeb.forEach(Drawing.drawSpiderWeb);
                 Drawing.connectNode(global.connectWeb);
@@ -165,6 +166,8 @@ class Game {
                 });
 
                 global.users.forEach(Drawing.shootedWeb);
+
+                 global.nodes.forEach(Drawing.drawNode);
 
                 Drawing.drawSvg(orderMass);
 

@@ -15,7 +15,6 @@ const _ = {
 };
 
 
-
 function valueInRange(min, max, value) {
     return Math.min(max, Math.max(min, value));
 }
@@ -33,6 +32,7 @@ var playerConfig = {
     defaultSize: 30
 };
 
+
 class Drawing {
     constructor(ctx) {
         context = ctx;
@@ -48,8 +48,8 @@ class Drawing {
         context.fillText(msg, global.screenWidth / 2, global.screenHeight / 2);
     }
 
-    static clear () {
-        if ( context === "undefined" ) {
+    static clear() {
+        if (context === "undefined") {
             context = window.control.cv.getContext('2d');
         }
         context.fillStyle = global.backgroundColor;
@@ -83,12 +83,9 @@ class Drawing {
 
 
     static drawCursor() {
-        context.lineWidth = 1;
-        context.strokeStyle = global.lineColor;
-        context.beginPath();
-
-        context.arc(global.cursor.x, global.cursor.y, global.cursor.r, 0, 2 * Math.PI);
-        context.fill();
+        var img = new Image(30, 30);
+        img.src = "img/cursor.png";
+        context.drawImage(img, global.cursor.x - 15, global.cursor.y - 15);
     }
 
     static drawGrid() {
@@ -166,7 +163,8 @@ class Drawing {
 
 
         context.lineWidth = 2;
-        context.strokeStyle = "#333";
+        context.strokeStyle = 'hsl(' + web.player.hue + ', 100%, 45%)';
+        context.fillStyle = 'hsl(' + web.player.hue + ', 100%, 50%)';
 
         context.beginPath();
         context.moveTo(x, y);
@@ -175,19 +173,19 @@ class Drawing {
         context.closePath();
     }
 
-    static fixedX (x) {
+    static fixedX(x) {
         return x - global.player.x + global.screenWidth / 2;
     }
 
-    static fixedY (y) {
+    static fixedY(y) {
         return y - global.player.y + global.screenHeight / 2;
     }
 
-    static shootedWeb (player) {
+    static shootedWeb(player) {
         if (player.webAttach === null) return;
         context.lineWidth = 2;
-        context.strokeStyle = "#333";
-        context.fillStyle = '#333';
+        context.strokeStyle = 'hsl(' + player.hue + ', 100%, 45%)';
+        context.fillStyle = 'hsl(' + player.hue + ', 100%, 50%)';
 
         context.beginPath();
         context.moveTo(Drawing.fixedX(player.x), Drawing.fixedY(player.y));
@@ -196,17 +194,17 @@ class Drawing {
         context.closePath();
     }
 
-    static connectNode (arr) {
-        arr.map((player)=>{
+    static connectNode(arr) {
+        arr.map((player) => {
             let arr3 = _.chunk(player.nodes, 3);
-            arr3.map((el)=>{
+            arr3.map((el) => {
                 var first = el[0];
                 var second = el[1];
                 var third = el[2];
 
                 context.lineWidth = 2;
-                context.strokeStyle = "#333";
-                context.fillStyle = '#333';
+                context.strokeStyle = 'hsl(' + player.player.hue + ', 100%, 45%)';
+                context.fillStyle = 'hsl(' + player.player.hue + ', 100%, 50%)';
 
                 context.beginPath();
                 context.moveTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
@@ -222,49 +220,54 @@ class Drawing {
 
 
     static drawNode(node) {
-        if ( context === "undefined" ) {
+        if (context === "undefined") {
             context = window.control.cv.getContext('2d');
         }
 
-        context.strokeStyle = '#000';
-        context.fillStyle = '#000';
+        context.strokeStyle = '#6e6e6e';
+        context.fillStyle = '#6e6e6e';
         context.lineWidth = nodeConfig.border;
         Drawing.drawCircle(node.x, node.y, node.radius, global.nodeSides, true);
     }
 
-    static drawSvg (order) {
-        var size = 40;
-        var img = new Image(size,size);
-        img.src = "img/spider.png";
+    static drawSvg(order) {
 
-        var angleInRadians, angleInDeg,x, y;
+        var size = 40;
+        var img = new Image(size, size);
+
+        var angleInRadians, angleInDeg, x, y;
         for (var z = 0; z < order.length; z++) {
             var userCurrent = global.users[order[z].nCell];
             var cellCurrent = userCurrent.cells[order[z].nDiv];
+
+            //Grab png for the same hue
+            if (isNaN(userCurrent.hue)) userCurrent.hue = 0;
+            img.src = "img/spider_" + userCurrent.hue + ".png";
+
             if (userCurrent.webAttach !== null) {
                 angleInRadians = Math.atan2(userCurrent.webAttach.y - userCurrent.y, userCurrent.webAttach.x - userCurrent.x);
 
                 angleInDeg = angleInRadians * 180 / Math.PI;
                 angleInDeg += 90;
-                angleInRadians = angleInDeg *  Math.PI / 180;
+                angleInRadians = angleInDeg * Math.PI / 180;
 
                 x = (cellCurrent.x - (global.player.x - (global.screenWidth / 2)));
                 y = (cellCurrent.y - (global.player.y - (global.screenHeight / 2)));
-                Drawing.rotateAndPaintImage(img, angleInRadians, x,y, img.width/2,img.height/2);
+                Drawing.rotateAndPaintImage(img, angleInRadians, x, y, img.width / 2, img.height / 2);
 
-            }  else {
+            } else {
                 context.drawImage(img, (cellCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size / 2),
                     (cellCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size / 2));
             }
         }
     }
 
-    static rotateAndPaintImage ( image, angleInRad , positionX, positionY, axisX, axisY ) {
-        context.translate( positionX, positionY );
-        context.rotate( angleInRad );
-        context.drawImage( image, -axisX, -axisY );
-        context.rotate( -angleInRad );
-        context.translate( -positionX, -positionY );
+    static rotateAndPaintImage(image, angleInRad, positionX, positionY, axisX, axisY) {
+        context.translate(positionX, positionY);
+        context.rotate(angleInRad);
+        context.drawImage(image, -axisX, -axisY);
+        context.rotate(-angleInRad);
+        context.translate(-positionX, -positionY);
     }
 
     static drawPlayers(order) {

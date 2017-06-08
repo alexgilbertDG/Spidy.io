@@ -46,6 +46,8 @@ var pool = sql.createConnection({
     database: s.database
 });
 
+var spiderColorsHue = [0, 10, 30, 50, 70, 100, 190, 210, 240, 270, 300, 320];
+
 //log sql errors
 pool.connect(function (err) {
     if (err) {
@@ -96,7 +98,7 @@ io.on('connection', function (socket) {
         cells: [],
         massTotal: c.defaultPlayerMass,
         webAttach : null,
-        hue: Math.round(Math.random() * 360),
+        hue : spiderColorsHue[Math.round(Math.random() * spiderColorsHue.length)],
         lastHeartbeat: new Date().getTime(),
         target: {
             x: 0,
@@ -133,8 +135,6 @@ io.on('connection', function (socket) {
             }];
             player.massTotal = c.defaultPlayerMass;
 
-
-            player.hue = Math.round(Math.random() * 360);
             currentPlayer = player;
             currentPlayer.lastHeartbeat = new Date().getTime();
             users.push(currentPlayer);
@@ -770,7 +770,7 @@ function sendUpdates() {
                                 cells: f.cells,
                                 webAttach:f.webAttach,
                                 massTotal: Math.round(f.massTotal),
-                                hue: f.hue,
+                                hue: f.hue
                             };
                         }
                     }
