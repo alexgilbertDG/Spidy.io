@@ -271,7 +271,7 @@ class Drawing {
     static drawSvg(order) {
 
         var size = 40;
-        var img = new Image(size, size);
+
 
         var angleInRadians, angleInDeg, x, y;
         for (var z = 0; z < order.length; z++) {
@@ -280,6 +280,7 @@ class Drawing {
 
             //Grab png for the same hue
             if (isNaN(userCurrent.hue)) userCurrent.hue = 0;
+            var img = new Image(size, size);
             img.src = "img/spider_" + userCurrent.hue + ".png";
 
             if (userCurrent.webAttach !== null) {
@@ -289,9 +290,9 @@ class Drawing {
                 angleInDeg += 90;
                 angleInRadians = angleInDeg * Math.PI / 180;
 
-                x = (cellCurrent.x - (global.player.x - (global.screenWidth / 2)));
-                y = (cellCurrent.y - (global.player.y - (global.screenHeight / 2)));
-                // Drawing.rotateAndPaintImage(img, angleInRadians, x, y, img.width / 2, img.height / 2);
+                x = (userCurrent.x - (global.player.x - (global.screenWidth / 2)));
+                y = (userCurrent.y - (global.player.y - (global.screenHeight / 2)));
+
 
                 context.translate(x, y);
                 context.rotate(angleInRadians);
@@ -300,9 +301,11 @@ class Drawing {
                 context.translate(-x, -y);
 
             } else {
-                context.drawImage(img, (cellCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size / 2),
-                    (cellCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size / 2));
+                context.drawImage(img, (userCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size / 2),
+                    (userCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size / 2));
             }
+
+
         }
     }
 
