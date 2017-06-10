@@ -78,6 +78,7 @@ class Game {
             if (self.validNick() && playerNameInput.value !== "") {
                 nickErrorText.style.opacity = 0;
                 self.startGame('player');
+
             } else {
                 nickErrorText.style.opacity = 1;
             }
@@ -102,6 +103,7 @@ class Game {
                 if (self.validNick()) {
                     nickErrorText.style.opacity = 0;
                     self.startGame('player');
+
                 } else {
                     nickErrorText.style.opacity = 1;
                 }
@@ -131,18 +133,24 @@ class Game {
             animloop();
         global.socket.emit('respawn');
         window.control.socket = global.socket;
+
+        document.getElementsByTagName('html')[0].className += " no-mouse";
     }
+
+
 
     gameLoop() {
         if (global.died) {
             Drawing.gameOver('You died!');
+            document.getElementsByTagName('html')[0].className.replace('no-mouse', ' ');
+
         }
         else if (!global.disconnected) {
             if (global.gameStart) {
 
                 Drawing.clear();
                 Drawing.drawGrid();
-                Drawing.drawCursor();
+
 
 
                 if (global.borderDraw) {
@@ -172,19 +180,24 @@ class Game {
 
                 Drawing.drawSvg(orderMass);
 
+                Drawing.drawCursor();
+
                 if (window.control.target !== undefined) {
                     global.socket.emit('0', window.control.target); // playerSendTarget "Heartbeat".
                 }
 
             } else {
                 Drawing.gameOver('Game Over');
+                document.getElementsByTagName('html')[0].className.replace('no-mouse', ' ');
             }
         } else {
             if (global.kicked) {
                 Drawing.gameOver('You were kicked out!');
+                document.getElementsByTagName('html')[0].className.replace('no-mouse', ' ');
 
             } else {
                 Drawing.gameOver('Disconnected!');
+                document.getElementsByTagName('html')[0].className.replace('no-mouse', ' ');
             }
         }
     }

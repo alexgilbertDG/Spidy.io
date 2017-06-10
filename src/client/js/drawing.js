@@ -163,7 +163,7 @@ class Drawing {
 
 
         context.lineWidth = 2;
-        context.strokeStyle = 'hsl(' + web.player.hue + ', 100%, 45%)';
+        context.strokeStyle = 'hsl(' + web.player.hue + ', 100%, 50%)';
         context.fillStyle = 'hsl(' + web.player.hue + ', 100%, 50%)';
 
         context.beginPath();
@@ -184,7 +184,7 @@ class Drawing {
     static shootedWeb(player) {
         if (player.webAttach === null) return;
         context.lineWidth = 2;
-        context.strokeStyle = 'hsl(' + player.hue + ', 100%, 45%)';
+        context.strokeStyle = 'hsl(' + player.hue + ', 100%, 50%)';
         context.fillStyle = 'hsl(' + player.hue + ', 100%, 50%)';
 
         context.beginPath();
@@ -193,7 +193,7 @@ class Drawing {
         context.stroke();
         context.closePath();
 
-         Drawing.drawCircle(player.webAttach.x, player.webAttach.y, 10, global.nodeSides, true);
+        Drawing.drawCircle(player.webAttach.x, player.webAttach.y, 10, global.nodeSides, true);
     }
 
     static connectNode(arr) {
@@ -216,12 +216,44 @@ class Drawing {
                 context.stroke();
                 context.closePath();
 
+                Drawing.createSpiderWebEffect(first, second, third);
+
                 Drawing.drawCircle(first.x, first.y, 10, global.nodeSides, true);
                 Drawing.drawCircle(second.x, second.y, 10, global.nodeSides, true);
-                Drawing.drawCircle(third.x, third.y,10 , global.nodeSides, true);
+                Drawing.drawCircle(third.x, third.y, 10, global.nodeSides, true);
 
             });
         });
+
+    }
+
+    static createSpiderWebEffect(closest, startingWeb, webAttach) {
+        let distClosest = Math.sqrt(Math.pow(closest.x - webAttach.x, 2) + Math.pow(closest.y - webAttach.y, 2));
+        let distStarting = Math.sqrt(Math.pow(startingWeb.x - webAttach.x, 2) + Math.pow(startingWeb.y - webAttach.y, 2));
+
+        let numberOfPoint = 10;
+        let points = [];
+        for (var i = 0; i < distClosest; i += distClosest / numberOfPoint) {
+            let ratio = i / distClosest;
+            let point1 = {
+                x: (((closest.x - webAttach.x) * ratio) + webAttach.x),
+                y: (((closest.y - webAttach.y) * ratio) + webAttach.y)
+            };
+            let point2 = {
+                x: (((startingWeb.x - webAttach.x) * ratio) + webAttach.x),
+                y: (((startingWeb.y - webAttach.y) * ratio) + webAttach.y)
+            };
+            points.push([point1, point2]);
+        }
+
+        points.map((arr) => {
+            context.beginPath();
+            context.moveTo(Drawing.fixedX(arr[0].x), Drawing.fixedY(arr[0].y));
+            context.lineTo(Drawing.fixedX(arr[1].x), Drawing.fixedY(arr[1].y));
+            context.stroke();
+            context.closePath();
+        });
+
 
     }
 
