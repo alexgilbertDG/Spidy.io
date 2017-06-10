@@ -50,8 +50,8 @@ exports.randomPositionOnGrid = function (radius) {
 
 exports.gridPosition = function() {
     var finalGrid = [];
-    for (var x = 0; x < cfg.gameWidth; x += cfg.gridGap) {
-        for (var y = 0; y < cfg.gameHeight; y += cfg.gridGap) {
+    for (var x = 0; x < cfg.gameWidth+cfg.gridGap; x += cfg.gridGap) {
+        for (var y = 0; y < cfg.gameHeight+cfg.gridGap; y += cfg.gridGap) {
             finalGrid.push({x: x, y: y});
         }
     }

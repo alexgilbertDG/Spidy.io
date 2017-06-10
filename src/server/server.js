@@ -97,6 +97,7 @@ io.on('connection', function (socket) {
         cells: [],
         massTotal: c.defaultPlayerMass,
         webAttach : null,
+        startingWeb: null,
         hue : spiderColorsHue[Math.round(Math.random() * spiderColorsHue.length)],
         lastHeartbeat: new Date().getTime(),
         target: {
@@ -252,14 +253,13 @@ io.on('connection', function (socket) {
     socket.on("mouseUPShooting", function () {
         if (currentPlayer.webAttach === null) return;
 
-        //  let dirX = Math.round(direction.x * 100 / c.gridGap) * c.gridGap;
-        // let dirY = Math.round(direction.y * 100 / c.gridGap) * c.gridGap;
-        // console.log(dirX);
-        // console.log(dirY);
-        //let middle = {
-        //  x: (closest.x + currentPlayer.webAttach.x) > c.gameWidth ? closest.x - currentPlayer.webAttach.x : closest.x + currentPlayer.webAttach.x,
-        //  y: closest.y
-        // };
+        if (currentPlayer.x > c.gameWidth+1 || currentPlayer.x < 0 || currentPlayer.y > c.gameHeight+1 || currentPlayer.y < 0) {
+            currentPlayer.webAttach = null;
+             currentPlayer.startingWeb = null;
+            sockets[currentPlayer.id].emit("receiveShootingNode", null);
+             sockets[currentPlayer.id].emit("receiveShootingNodeStarting", null);
+            return;
+        }
 
 
         //return closest node point on the grid
@@ -269,31 +269,23 @@ io.on('connection', function (socket) {
         };
 
 
-        let middle = {
-            x: currentPlayer.webAttach.x,
-            y: closest.y
-        };
-
-        if (_.isEqual(middle, closest) || _.isEqual(middle, currentPlayer.webAttach)) {
-            middle = {
-                x: Math.floor(currentPlayer.x / c.gridGap) * c.gridGap,
-                y: Math.ceil(currentPlayer.webAttach.y / c.gridGap) * c.gridGap,
-            };
-        }
-
         connectWeb.map((el) => {
             if (el.player.id === currentPlayer.id) {
-                el.nodes.push(closest, middle, currentPlayer.webAttach);
+                el.nodes.push(closest, currentPlayer.startingWeb, currentPlayer.webAttach);
             }
         });
 
         currentPlayer.webAttach = null;
+         currentPlayer.startingWeb = null;
         sockets[currentPlayer.id].emit("receiveShootingNode", null);
+        sockets[currentPlayer.id].emit("receiveShootingNodeStarting", null);
     });
 
     socket.on("deleteWebAttach", function () {
         currentPlayer.webAttach = null;
+        currentPlayer.startingWeb = null;
         sockets[currentPlayer.id].emit("receiveShootingNode", null);
+        sockets[currentPlayer.id].emit("receiveShootingNodeStarting", null);
     });
 
 
@@ -314,6 +306,15 @@ io.on('connection', function (socket) {
             y: Math.round((currentPlayer.y + dist.y) / c.gridGap) * c.gridGap
         };
 
+        if (position.x > c.gameWidth || position.x < 0 || position.y > c.gameHeight || position.y < 0) {
+            return;
+        }
+
+        currentPlayer.startingWeb = {
+            x: Math.round((currentPlayer.x) / c.gridGap) * c.gridGap,
+            y: Math.round((currentPlayer.y) / c.gridGap) * c.gridGap
+        };
+
         spiderWeb.push({
             player: currentPlayer,
             dir: direction,
@@ -327,6 +328,7 @@ io.on('connection', function (socket) {
 
         currentPlayer.webAttach = position;
         sockets[currentPlayer.id].emit("receiveShootingNode", position);
+         sockets[currentPlayer.id].emit("receiveShootingNodeStarting", currentPlayer.startingWeb);
     });
 });
 
@@ -462,7 +464,7 @@ function movePlayer(player) {
         //Faster when the spider is under the center point
         //Slower when he is far away
         var diffX = Math.abs(player.webAttach.x - pos.x);
-        var value = 10 + (r / 100) + (1 / diffX * 15);
+        var value = diffX > 0.2 ? 10 + (r / 100) + (1 / diffX * 15) : 3;
         if (target.x>0) {
             pos.x+=value;
         }

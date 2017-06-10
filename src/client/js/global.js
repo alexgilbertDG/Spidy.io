@@ -45,6 +45,7 @@ module.exports = {
     cursor: {x:0,y:0,r:10},
     backgroundColor: '#f2fbff',
     lineColor: '#000000',
+    nodeColor: '#6e6e6e',
     debug : function (args) {
     if (console && console.log) {
         console.log(args);

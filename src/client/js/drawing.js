@@ -192,6 +192,8 @@ class Drawing {
         context.lineTo(Drawing.fixedX(player.webAttach.x), Drawing.fixedY(player.webAttach.y));
         context.stroke();
         context.closePath();
+
+         Drawing.drawCircle(player.webAttach.x, player.webAttach.y, 10, global.nodeSides, true);
     }
 
     static connectNode(arr) {
@@ -213,19 +215,23 @@ class Drawing {
                 context.lineTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
                 context.stroke();
                 context.closePath();
+
+                Drawing.drawCircle(first.x, first.y, 10, global.nodeSides, true);
+                Drawing.drawCircle(second.x, second.y, 10, global.nodeSides, true);
+                Drawing.drawCircle(third.x, third.y,10 , global.nodeSides, true);
+
             });
         });
 
     }
 
 
-    static drawNode(node) {
+    static drawNode(node, _color) {
         if (context === "undefined") {
             context = window.control.cv.getContext('2d');
         }
-
-        context.strokeStyle = '#6e6e6e';
-        context.fillStyle = '#6e6e6e';
+        context.strokeStyle = _color;
+        context.fillStyle = _color;
         context.lineWidth = nodeConfig.border;
         Drawing.drawCircle(node.x, node.y, node.radius, global.nodeSides, true);
     }
@@ -244,6 +250,7 @@ class Drawing {
             if (isNaN(userCurrent.hue)) userCurrent.hue = 0;
             img.src = "img/spider_" + userCurrent.hue + ".png";
 
+
             if (userCurrent.webAttach !== null) {
                 angleInRadians = Math.atan2(userCurrent.webAttach.y - userCurrent.y, userCurrent.webAttach.x - userCurrent.x);
 
@@ -253,7 +260,13 @@ class Drawing {
 
                 x = (cellCurrent.x - (global.player.x - (global.screenWidth / 2)));
                 y = (cellCurrent.y - (global.player.y - (global.screenHeight / 2)));
-                Drawing.rotateAndPaintImage(img, angleInRadians, x, y, img.width / 2, img.height / 2);
+                // Drawing.rotateAndPaintImage(img, angleInRadians, x, y, img.width / 2, img.height / 2);
+
+                context.translate(x, y);
+                context.rotate(angleInRadians);
+                context.drawImage(img, -img.width / 2, -img.height / 2);
+                context.rotate(-angleInRadians);
+                context.translate(-x, -y);
 
             } else {
                 context.drawImage(img, (cellCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size / 2),
@@ -262,13 +275,6 @@ class Drawing {
         }
     }
 
-    static rotateAndPaintImage(image, angleInRad, positionX, positionY, axisX, axisY) {
-        context.translate(positionX, positionY);
-        context.rotate(angleInRad);
-        context.drawImage(image, -axisX, -axisY);
-        context.rotate(-angleInRad);
-        context.translate(-positionX, -positionY);
-    }
 
     static drawPlayers(order) {
         var start = {

@@ -87,6 +87,10 @@ class SocketClient {
 
         });
 
+        socket.on('receiveShootingNodeStarting', function (pos) {
+             this.player.startingWeb = pos;
+         });
+
          socket.on('receiveShootingNode', function (pos) {
              this.player.webAttach = pos;
          });
