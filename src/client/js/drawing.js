@@ -268,7 +268,7 @@ class Drawing {
         Drawing.drawCircle(node.x, node.y, node.radius, global.nodeSides, true);
     }
 
-    static drawSvg(order) {
+    static drawPlayers(order) {
 
         var size = 40;
 
@@ -277,6 +277,7 @@ class Drawing {
         for (var z = 0; z < order.length; z++) {
             var userCurrent = global.users[order[z].nCell];
             var cellCurrent = userCurrent.cells[order[z].nDiv];
+
 
             //Grab png for the same hue
             if (isNaN(userCurrent.hue)) userCurrent.hue = 0;
@@ -310,7 +311,7 @@ class Drawing {
     }
 
 
-    static drawPlayers(order) {
+    static old_drawPlayers(order) {
         var start = {
             x: global.player.x - (global.screenWidth / 2),
             y: global.player.y - (global.screenHeight / 2)

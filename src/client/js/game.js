@@ -134,6 +134,7 @@ class Game {
         global.socket.emit('respawn');
         window.control.socket = global.socket;
 
+
         document.getElementsByTagName('html')[0].className += " no-mouse";
     }
 
@@ -178,7 +179,7 @@ class Game {
                 Drawing.connectNode(global.connectWeb);
                 global.spiderWeb.forEach(Drawing.drawSpiderWeb);
 
-                Drawing.drawSvg(orderMass);
+                Drawing.drawPlayers(orderMass);
 
                 Drawing.drawCursor();
 

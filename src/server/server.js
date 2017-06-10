@@ -47,6 +47,7 @@ var pool = sql.createConnection({
 });
 
 var spiderColorsHue = [0, 10, 30, 50, 70, 100, 190, 210, 240, 270, 300, 320];
+var killSpeed = 10;
 
 //log sql errors
 pool.connect(function (err) {
@@ -99,6 +100,7 @@ io.on('connection', function (socket) {
         startingWeb: null,
         hue: spiderColorsHue[Math.round(Math.random() * spiderColorsHue.length)],
         lastHeartbeat: new Date().getTime(),
+        killed: false,
         target: {
             x: 0,
             y: 0
@@ -354,9 +356,19 @@ io.on('connection', function (socket) {
             }
         }
 
-        users.map((player) => {
-            if (Math.dist(player.x, player.y, (currentPlayer.x + dist.x), (currentPlayer.y + dist.y)) < 10) {
-                console.log('KILLED OTHER PLAYER');
+        users.map((player, index) => {
+            if (player.id !== currentPlayer.id) {
+                if (Math.dist(player.x, player.y, (currentPlayer.x + dist.x), (currentPlayer.y + dist.y)) < 10) {
+                    console.log(currentPlayer.name + ' has KILLED ' + player.name);
+                    player.killed = true;
+                    removePlayerWeb(player);
+                    setTimeout(()=>{
+                        users.splice(index, 1);
+                        player.killed = false;
+                        io.emit('playerDied', {name: player.name});
+                        sockets[player.id].emit('RIP');
+                    }, 1000);
+                }
             }
         });
 
@@ -450,6 +462,12 @@ function isOnOwnWeb(playerID, playerX, playerY) {
 }
 
 function movePlayer(player) {
+
+    if (player.killed) {
+        player.y += killSpeed;
+        player.cells[0].y += killSpeed;
+        return;
+    }
 
     var target;
     if (player.webAttach === null) {
@@ -570,6 +588,8 @@ function movePlayer(player) {
         player.cells[0].x = player.x;
         player.cells[0].y = player.y;
     }
+
+
 
 }
 
