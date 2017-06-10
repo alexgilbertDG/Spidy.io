@@ -16,6 +16,8 @@ var player = {
 };
 
 
+
+
 var visibleBorderSetting = document.getElementById('visBord');
 visibleBorderSetting.onchange = settings.toggleBorder;
 

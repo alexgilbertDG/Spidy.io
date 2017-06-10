@@ -250,7 +250,6 @@ class Drawing {
             if (isNaN(userCurrent.hue)) userCurrent.hue = 0;
             img.src = "img/spider_" + userCurrent.hue + ".png";
 
-
             if (userCurrent.webAttach !== null) {
                 angleInRadians = Math.atan2(userCurrent.webAttach.y - userCurrent.y, userCurrent.webAttach.x - userCurrent.x);
 

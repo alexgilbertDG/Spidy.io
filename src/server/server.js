@@ -25,6 +25,7 @@ var tree = quadtree(0, 0, c.gameWidth, c.gameHeight);
 
 var users = [];
 var node = [];
+var map = [];
 var spiderWeb = [];
 var connectWeb = [];
 
@@ -272,6 +273,7 @@ io.on('connection', function (socket) {
         connectWeb.map((el) => {
             if (el.player.id === currentPlayer.id) {
                 el.nodes.push(closest, currentPlayer.startingWeb, currentPlayer.webAttach);
+                fillMap(closest, currentPlayer.webAttach, middle);
             }
         });
 
@@ -281,12 +283,50 @@ io.on('connection', function (socket) {
         sockets[currentPlayer.id].emit("receiveShootingNodeStarting", null);
     });
 
+    function fillMap(point1,point2,point3) {
+        
+        var p1 = {}, p2 = {}, p3 = {};
+        p1.x = point1.x / c.gridGap;
+        p1.y = point1.y / c.gridGap;
+        p2.x = point2.x / c.gridGap;
+        p2.y = point2.y / c.gridGap;
+        p3.x = point3.x / c.gridGap;
+        p3.y = point3.y / c.gridGap;
+
+        console.log("fillMap() ---------------");
+
+        console.log(p1.x+","+p1.y);
+        console.log(p2.x+","+p2.y);
+        console.log(p3.x+","+p3.y);
+        
+        var m = (p1.y - p2.y) / (p1.x - p2.x);
+        var B = p1.y - m * p1.x;
+        var bool = p3.y < p3.x * m + B;
+
+        var maxX = Math.max(p1.x, p2.x);
+        var minX = Math.min(p1.x, p2.x);
+        var maxY = Math.max(p1.y, p2.y);
+        var minY = Math.min(p1.y, p2.y);
+
+        console.log("squares ---------------");
+        for(var x = minX; x < maxX; x++)
+            for(var y = minY; y < maxY; y++) {
+                var mod = bool? +1: 0;
+                if(y+mod < x+mod * m + B == bool)
+                    console.log(x+","+y);
+                    //map[x][y] = ID;
+            }
+
+    }
+
     socket.on("deleteWebAttach", function () {
         currentPlayer.webAttach = null;
         currentPlayer.startingWeb = null;
         sockets[currentPlayer.id].emit("receiveShootingNode", null);
         sockets[currentPlayer.id].emit("receiveShootingNodeStarting", null);
     });
+
+
 
 
     //called when a player starts shooting web
@@ -361,7 +401,31 @@ function initWebPosition(player) {
     }
 }
 
+function isOnOwnWeb(playerID, playerX, playerY) {
+    let mapX = Math.floor( playerX / c.gridGap );
+    let mapY = Math.floor( playerY / c.gridGap );
 
+    //if web dosnt have player id is not own web
+    if( map[mapX][mapY] != playerID)
+        return false;
+    else
+        return true;
+
+    /*
+    //if all nodes are connected then player is in web
+    if( map[mapX][mapY].nodes.length == 4 )
+        return true;
+    else if( map[mapX][mapY].nodes.length < 3 )
+        return false;
+
+    let localX = playerX % gridGap;
+    let localY = playerY % gridGap;
+
+    let pos = localY < localX;
+    let neg = localY < gridGap - localX;
+
+    */
+}
 
 function movePlayer(player) {
 
