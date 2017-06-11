@@ -352,7 +352,7 @@ io.on('connection', function (socket) {
 
                 if ((u >= 0) && (v >= 0) && (u + v <= 1)) {
                     //console.log(x+","+y);
-                    map[x][y] = currentPlayer.id;
+                    map[x][y] = {id: currentPlayer.id, hue: currentPlayer.hue};
                 }
             }
         }
@@ -434,8 +434,10 @@ function removePlayerWeb(player) {
 
     for (var i = 0; i < map.length; i++) {
         for (var j = 0; j < map[0].length; j++) {
-            if (player.id == map[i][j]) {
-                map[i][j] = null;
+            if (map[i][j] !== null && map[i][j] !== undefined) {
+                if (player.id === map[i][j].id) {
+                    map[i][j] = null;
+                }
             }
         }
     }
@@ -463,7 +465,7 @@ function initWebPosition(player) {
 
         var x1 = Math.floor((player.x - x / 2) / c.gridGap);
         var y1 = Math.floor((player.y - y / 2) / c.gridGap);
-        map[x1][y1] = player.id;
+        map[x1][y1] =  {id: player.id, hue: player.hue};
 
         x = -x;
         y = -y;
@@ -476,10 +478,12 @@ function isOnOwnWeb(playerID, playerX, playerY) {
     let mapY = Math.floor(playerY / c.gridGap);
 
     //if web dosnt have player id is not own web
-    if (map[mapX][mapY] != playerID)
-        return false;
-    else
-        return true;
+    if (map[mapX][mapY] !== null && map[mapX][mapY] !== undefined) {
+        if (map[mapX][mapY].id === playerID) {
+            return true;
+        }
+    }
+    return false;
 
     /*
      //if all nodes are connected then player is in web

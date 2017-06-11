@@ -178,28 +178,62 @@ class Drawing {
         var gridGap = 100;
 
         var x = Math.floor((global.player.x - global.screenWidth / 2) / gridGap) * gridGap;
-        if(x < 0)
+        if (x < 0)
             x = 0;
 
         var y = Math.floor((global.player.y - global.screenHeight / 2) / gridGap) * gridGap;
-        if(y < 0)
+        if (y < 0)
             y = 0;
 
 
-        for(var i=0; i<map.length; i++) {
-            for(var j=0; j<map[0].length; j++) {
-                if(map[i][j] !== undefined && map[i][j] !== null) {
+        for (var i = 0; i < map.length; i++) {
+            for (var j = 0; j < map[0].length; j++) {
+                if (map[i][j] !== undefined && map[i][j] !== null) {
 
-                    var screenX = (x + i * gridGap) - global.player.x + global.screenWidth / 2;
-                    var screenY = (y + j * gridGap) - global.player.y + global.screenHeight / 2;
+                    var topLeftX = (x + i * gridGap) - global.player.x + global.screenWidth / 2;
+                    var topLeftY = (y + j * gridGap) - global.player.y + global.screenHeight / 2;
+                    context.globalAlpha = 0.2;
+                    context.fillStyle = 'hsl(' + map[i][j].hue + ', 50%, 50%)';
+                    context.fillRect(topLeftX, topLeftY, gridGap, gridGap);
+                    context.globalAlpha = 1;
 
-                    context.fillStyle = 'hsl(' + 0 + ', 100%, 50%)';
-                    context.fillRect(screenX, screenY, gridGap, gridGap);
+                    context.strokeStyle = 'hsl(' + map[i][j].hue + ', 100%, 50%)';
+                    context.fillStyle = 'hsl(' + map[i][j].hue + ', 100%, 45%)';
+
+
+                    var topLeft = {x: (x + i * gridGap), y: (y + j * gridGap)};
+
+                    var topRight = {x: topLeft.x + gridGap, y: topLeft.y};
+                    var bottomRight = {x: topLeft.x + gridGap, y: topLeft.y + gridGap};
+                    var bottomLeft = {x: topLeft.x, y: topLeft.y + gridGap};
+                    var centerPoint = {x: topLeft.x + gridGap / 2, y: topLeft.y + gridGap / 2};
+
+                    context.lineWidth = 2;
+
+
+                    Drawing.createSpiderWebEffect(topLeft, topRight, centerPoint, 15);
+                    Drawing.createSpiderWebEffect(topRight, bottomRight, centerPoint, 15);
+                    Drawing.createSpiderWebEffect(bottomRight, bottomLeft, centerPoint, 15);
+                    Drawing.createSpiderWebEffect(bottomLeft, topLeft, centerPoint, 15);
+
+                    context.beginPath();
+                    context.moveTo(Drawing.fixedX(topLeft.x), Drawing.fixedY(topLeft.y));
+                    context.lineTo(Drawing.fixedX(bottomRight.x), Drawing.fixedY(bottomRight.y));
+                    context.moveTo(Drawing.fixedX(topRight.x), Drawing.fixedY(topRight.y));
+                    context.lineTo(Drawing.fixedX(bottomLeft.x), Drawing.fixedY(bottomLeft.y));
+                    context.stroke();
+                    context.closePath();
+
+
+                    Drawing.drawCircle(topLeft.x, topLeft.y, 10, global.nodeSides, true);
+                    Drawing.drawCircle(bottomLeft.x, bottomLeft.y, 10, global.nodeSides, true);
+                    Drawing.drawCircle(topRight.x, topRight.y, 10, global.nodeSides, true);
+                    Drawing.drawCircle(bottomRight.x, bottomRight.y, 10, global.nodeSides, true);
+
+
                 }
             }
         }
-
-
     }
 
     static fixedX(x) {
@@ -244,7 +278,7 @@ class Drawing {
                 context.stroke();
                 context.closePath();
 
-                Drawing.createSpiderWebEffect(first, second, third);
+                Drawing.createSpiderWebEffect(first, second, third, 30);
 
                 Drawing.drawCircle(first.x, first.y, 10, global.nodeSides, true);
                 Drawing.drawCircle(second.x, second.y, 10, global.nodeSides, true);
@@ -255,12 +289,11 @@ class Drawing {
 
     }
 
-    static createSpiderWebEffect(closest, startingWeb, webAttach) {
+    static createSpiderWebEffect(closest, startingWeb, webAttach, lineGap) {
         //50% of the mid point will create the effect
         //the lower, the more the curve will be visible
         let accent = 65;
-        //Gap between each line
-        let lineGap = 30;
+
 
         let distClosest = Math.sqrt(Math.pow(closest.x - webAttach.x, 2) + Math.pow(closest.y - webAttach.y, 2));
         let distStarting = Math.sqrt(Math.pow(startingWeb.x - webAttach.x, 2) + Math.pow(startingWeb.y - webAttach.y, 2));

@@ -181,7 +181,7 @@ class Game {
 
                 global.nodes.map((node) => Drawing.drawNode(node, global.nodeColor));
 
-                Drawing.connectNode(global.connectWeb);
+                //Drawing.connectNode(global.connectWeb);
                 global.spiderWeb.forEach(Drawing.drawSpiderWeb);
 
                 Drawing.drawPlayers(orderMass);
