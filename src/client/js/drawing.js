@@ -177,8 +177,13 @@ class Drawing {
 
         var gridGap = 100;
 
-        var x = (global.player.x - global.screenWidth / 2) % gridGap;
-        var y = (global.player.y - global.screenHeight / 2) % gridGap;
+        var x = Math.floor((global.player.x - global.screenWidth / 2) / gridGap) * gridGap;
+        if(x < 0)
+            x = 0;
+
+        var y = Math.floor((global.player.y - global.screenHeight / 2) / gridGap) * gridGap;
+        if(y < 0)
+            y = 0;
 
         context.globalAlpha = 0.2;
 
@@ -186,8 +191,11 @@ class Drawing {
             for(var j=0; j<map[0].length; j++) {
                 if(map[i][j] !== undefined && map[i][j] !== null) {
 
+                    var screenX = (x + i * gridGap) - global.player.x + global.screenWidth / 2;
+                    var screenY = (y + j * gridGap) - global.player.y + global.screenHeight / 2;
+
                     context.fillStyle = 'hsl(' + 0 + ', 100%, 50%)';
-                    context.fillRect(i*gridGap - x, j*gridGap - y, gridGap, gridGap);
+                    context.fillRect(screenX, screenY, gridGap, gridGap);
                 }
             }
         }
