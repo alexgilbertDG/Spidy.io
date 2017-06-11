@@ -262,33 +262,32 @@ io.on('connection', function (socket) {
         if (currentPlayer.x > c.gameWidth + 1) {
 
             closest = {
-                x: c.gameWidth,
-                y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
+                x: c.gameWidth - c.gridGap,
+                y: Math.ceil(currentPlayer.y / c.gridGap) * c.gridGap
             };
 
         } else if (currentPlayer.x < 0) {
             closest = {
                 x: 0,
-                y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
+                y: Math.ceil(currentPlayer.y / c.gridGap) * c.gridGap
             };
         } else if (currentPlayer.y > c.gameHeight + 1) {
             closest = {
-                x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
+                x: Math.floor(currentPlayer.x / c.gridGap) * c.gridGap,
                 y: c.gameHeight,
             };
         } else if (currentPlayer.y < 0) {
             closest = {
-                x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
+                x: Math.floor(currentPlayer.x / c.gridGap) * c.gridGap,
                 y: 0
             };
         } else {
             //return closest node point on the grid
             closest = {
-                x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
-                y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
+                x: Math.floor(currentPlayer.x / c.gridGap) * c.gridGap,
+                y: Math.ceil(currentPlayer.y / c.gridGap) * c.gridGap
             };
-        }
-
+        } 
 
         connectWeb.map((el) => {
             if (el.player.id === currentPlayer.id) {
@@ -296,6 +295,7 @@ io.on('connection', function (socket) {
             }
         });
 
+        map[closest.x / c.gridGap][closest.y / c.gridGap - 1] = currentPlayer.id;
         fillMap(closest, currentPlayer.webAttach, currentPlayer.startingWeb);
 
         currentPlayer.webAttach = null;
