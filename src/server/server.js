@@ -493,6 +493,8 @@ function movePlayer(player) {
         return;
     }
 
+
+
     var target;
     if (player.webAttach === null) {
 
@@ -573,6 +575,11 @@ function movePlayer(player) {
         }
         player.x = x / player.cells.length;
         player.y = y / player.cells.length;
+
+
+        if (!isOnOwnWeb(player.id, player.x, player.y)) {
+            player.killed = true;
+        }
 
 
     }
