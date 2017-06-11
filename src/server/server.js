@@ -25,9 +25,9 @@ var tree = quadtree(0, 0, c.gameWidth, c.gameHeight);
 
 var users = [];
 var node = [];
-var map = new Array(Math.floor(c.gameWidth/c.gridGap));
-for(var i=0; i<map.length; i++) {
-    map[i] = new Array(Math.floor(c.gameHeight/c.gridGap));
+var map = new Array(Math.floor(c.gameWidth / c.gridGap));
+for (var i = 0; i < map.length; i++) {
+    map[i] = new Array(Math.floor(c.gameHeight / c.gridGap));
 }
 var spiderWeb = [];
 var connectWeb = [];
@@ -256,7 +256,7 @@ io.on('connection', function (socket) {
 
     socket.on("mouseUPShooting", function () {
         if (currentPlayer.webAttach === null) return;
-        let closest = {x:0,y:0};
+        let closest = {x: 0, y: 0};
 
         //Check boundaries if player is outside map
         if (currentPlayer.x > c.gameWidth + 1) {
@@ -293,10 +293,10 @@ io.on('connection', function (socket) {
         connectWeb.map((el) => {
             if (el.player.id === currentPlayer.id) {
                 el.nodes.push(closest, currentPlayer.startingWeb, currentPlayer.webAttach);
-
-                fillMap(closest, currentPlayer.webAttach, currentPlayer.startingWeb, currentPlayer.id);
             }
         });
+
+        fillMap(closest, currentPlayer.webAttach, currentPlayer.startingWeb);
 
         currentPlayer.webAttach = null;
         currentPlayer.startingWeb = null;
@@ -304,8 +304,8 @@ io.on('connection', function (socket) {
         sockets[currentPlayer.id].emit("receiveShootingNodeStarting", null);
     });
 
-    function fillMap(point0,point1,point2, ID) {
-        
+    function fillMap(point0, point1, point2) {
+
         var p0 = {}, p1 = {}, p2 = {};
         //a -> b
         p0.x = point1.x / c.gridGap - point0.x / c.gridGap;
@@ -314,13 +314,13 @@ io.on('connection', function (socket) {
         p1.x = point2.x / c.gridGap - point0.x / c.gridGap;
         p1.y = point2.y / c.gridGap - point0.y / c.gridGap;
         //a -> p
-        p2.x =  - point0.x / c.gridGap;
-        p2.y =  - point0.y / c.gridGap;
+        p2.x = -point0.x / c.gridGap;
+        p2.y = -point0.y / c.gridGap;
 
         var dot00, dot01, dot02, dot11, dot12;
-        dot00 = p0.x*p0.x + p0.y*p0.y;
-        dot01 = p0.x*p1.x + p0.y*p1.y;
-        dot11 = p1.x*p1.x + p1.y*p1.y;
+        dot00 = p0.x * p0.x + p0.y * p0.y;
+        dot01 = p0.x * p1.x + p0.y * p1.y;
+        dot11 = p1.x * p1.x + p1.y * p1.y;
 
         //console.log("fillMap() ---------------");
 
@@ -336,13 +336,13 @@ io.on('connection', function (socket) {
         //console.log(`${minY}, ${maxY}`);
 
         //console.log("squares ---------------");
-        for(var x = minX; x < maxX; x++) {
-            for(var y = minY; y < maxY; y++) {
+        for (var x = minX; x < maxX; x++) {
+            for (var y = minY; y < maxY; y++) {
 
-                p2.x = (x+0.5) - point0.x / c.gridGap;
-                p2.y = (y+0.5) - point0.y / c.gridGap;
-                dot02 = p0.x*p2.x + p0.y*p2.y;
-                dot12 = p1.x*p2.x + p1.y*p2.y;
+                p2.x = (x + 0.5) - point0.x / c.gridGap;
+                p2.y = (y + 0.5) - point0.y / c.gridGap;
+                dot02 = p0.x * p2.x + p0.y * p2.y;
+                dot12 = p1.x * p2.x + p1.y * p2.y;
 
                 var invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
                 var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
@@ -350,9 +350,9 @@ io.on('connection', function (socket) {
 
                 //console.log(`(${p2.x}, ${p2.y}) u:${u} v:${v}`);
 
-                if( (u >= 0) && (v >= 0) && (u + v <= 1) ) {
+                if ((u >= 0) && (v >= 0) && (u + v <= 1)) {
                     //console.log(x+","+y);
-                    map[x][y] = ID;
+                    map[x][y] = currentPlayer.id;
                 }
             }
         }
@@ -386,7 +386,7 @@ io.on('connection', function (socket) {
                     console.log(currentPlayer.name + ' has KILLED ' + player.name);
                     player.killed = true;
                     removePlayerWeb(player);
-                    setTimeout(()=>{
+                    setTimeout(() => {
                         users.splice(index, 1);
                         player.killed = false;
                         io.emit('playerDied', {name: player.name});
@@ -432,9 +432,9 @@ function removePlayerWeb(player) {
         return web.player.id !== player.id;
     });
 
-    for(var i=0; i<map.length; i++) {
-        for(var j=0; j<map[0].length; j++) {
-            if(player.id == map[i][j]) {
+    for (var i = 0; i < map.length; i++) {
+        for (var j = 0; j < map[0].length; j++) {
+            if (player.id == map[i][j]) {
                 map[i][j] = null;
             }
         }
@@ -455,14 +455,14 @@ function initWebPosition(player) {
             });
             idx = connectWeb.length - 1;
         } else {
-            connectWeb[idx].nodes.push({x: player.x - x, y: player.y}, {x: player.x, y: player.y -y}, {
+            connectWeb[idx].nodes.push({x: player.x - x, y: player.y}, {x: player.x, y: player.y - y}, {
                 x: player.x,
                 y: player.y
             });
         }
 
-        var x1 = Math.floor((player.x - x/2) / c.gridGap);
-        var y1 = Math.floor((player.y - y/2) / c.gridGap);
+        var x1 = Math.floor((player.x - x / 2) / c.gridGap);
+        var y1 = Math.floor((player.y - y / 2) / c.gridGap);
         map[x1][y1] = player.id;
 
         x = -x;
@@ -504,7 +504,6 @@ function movePlayer(player) {
         player.cells[0].y += killSpeed;
         return;
     }
-
 
 
     var target;
@@ -631,8 +630,6 @@ function movePlayer(player) {
         player.cells[0].x = player.x;
         player.cells[0].y = player.y;
     }
-
-
 
 }
 
@@ -869,19 +866,19 @@ function sendUpdates() {
         var min = {};
         min.x = Math.floor((u.x - u.screenWidth / 2) / c.gridGap);
         min.y = Math.floor((u.y - u.screenHeight / 2) / c.gridGap);
-        
+
         var max = {};
         max.x = Math.ceil((u.x + u.screenWidth / 2) / c.gridGap);
         max.y = Math.ceil((u.y + u.screenHeight / 2) / c.gridGap);
 
-        if(min.x < 0) min.x = 0;
-        if(min.y < 0) min.y = 0;
-        if(max.x > c.gameWidth/c.gridGap) max.x = c.gameWidth/c.gridGap;
-        if(max.x > c.gameHeight/c.gridGap) max.x = c.gameHeight/c.gridGap;
-        
-        var visibleMap = map.slice(min.x, max.x+1);
-        for(var i=0; i<visibleMap.length; i++) {
-            visibleMap[i] = visibleMap[i].slice(min.y, max.y+1); 
+        if (min.x < 0) min.x = 0;
+        if (min.y < 0) min.y = 0;
+        if (max.x > c.gameWidth / c.gridGap) max.x = c.gameWidth / c.gridGap;
+        if (max.x > c.gameHeight / c.gridGap) max.x = c.gameHeight / c.gridGap;
+
+        var visibleMap = map.slice(min.x, max.x + 1);
+        for (var i = 0; i < visibleMap.length; i++) {
+            visibleMap[i] = visibleMap[i].slice(min.y, max.y + 1);
         }
 
         sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleNode, visibleSpiderWeb, visibleConnectWeb, visibleMap);
