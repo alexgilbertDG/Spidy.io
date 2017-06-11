@@ -210,10 +210,8 @@ class Drawing {
 
                 context.beginPath();
                 context.moveTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
-
                 context.lineTo(Drawing.fixedX(third.x), Drawing.fixedY(third.y));
                 context.lineTo(Drawing.fixedX(second.x), Drawing.fixedY(second.y));
-                ///context.lineTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
                 context.stroke();
                 context.closePath();
 
@@ -230,8 +228,8 @@ class Drawing {
 
     static createSpiderWebEffect(closest, startingWeb, webAttach) {
         //50% of the mid point will create the effect
-        //the lower, the less the curve will be visible
-        let accent = 50;
+        //the lower, the more the curve will be visible
+        let accent = 65;
         //Gap between each line
         let lineGap = 30;
 
@@ -250,24 +248,22 @@ class Drawing {
                 x: (((startingWeb.x - webAttach.x) * ratio) + webAttach.x),
                 y: (((startingWeb.y - webAttach.y) * ratio) + webAttach.y)
             };
-            points.push([point1, point2]);
-        }
+            //points.push([point1, point2]);
 
-        points.map((arr) => {
             context.beginPath();
-            context.moveTo(Drawing.fixedX(arr[0].x), Drawing.fixedY(arr[0].y));
-            let midPoint = {x: (arr[0].x + arr[1].x) / 2, y: (arr[0].y + arr[1].y) / 2};
+            context.moveTo(Drawing.fixedX(point1.x), Drawing.fixedY(point1.y));
+            let midPoint = {x: (point1.x + point2.x) / 2, y: (point1.y + point2.y) / 2};
             let dist = Math.sqrt(Math.pow(midPoint.x - webAttach.x, 2) + Math.pow(midPoint.y - webAttach.y, 2));
             let curveAccent = dist / 100 * accent;
-            let ratio = curveAccent / dist;
+            let curveRatio = curveAccent / dist;
             let curvePoint = {
-                x: (((midPoint.x - webAttach.x) * ratio) + webAttach.x),
-                y: (((midPoint.y - webAttach.y) * ratio) + webAttach.y)
+                x: (((midPoint.x - webAttach.x) * curveRatio) + webAttach.x),
+                y: (((midPoint.y - webAttach.y) * curveRatio) + webAttach.y)
             };
-            context.quadraticCurveTo(Drawing.fixedX(curvePoint.x), Drawing.fixedY(curvePoint.y), Drawing.fixedX(arr[1].x), Drawing.fixedY(arr[1].y));
+            context.quadraticCurveTo(Drawing.fixedX(curvePoint.x), Drawing.fixedY(curvePoint.y), Drawing.fixedX(point2.x), Drawing.fixedY(point2.y));
             context.stroke();
             context.closePath();
-        });
+        }
     }
 
 
