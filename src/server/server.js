@@ -865,7 +865,7 @@ function sendUpdates() {
             visibleMap[i] = visibleMap[i].slice(min.y, max.y+1); 
         }
 
-        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleNode, visibleSpiderWeb, visibleConnectWeb);
+        sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleNode, visibleSpiderWeb, visibleConnectWeb, visibleMap);
         if (leaderboardChanged) {
             sockets[u.id].emit('leaderboard', {
                 players: users.length,

@@ -173,6 +173,28 @@ class Drawing {
         context.closePath();
     }
 
+    static drawMap(map) {
+
+        var gridGap = 100;
+
+        var x = (global.player.x - global.screenWidth / 2) % gridGap;
+        var y = (global.player.y - global.screenHeight / 2) % gridGap;
+
+        context.globalAlpha = 0.2;
+
+        for(var i=0; i<map.length; i++) {
+            for(var j=0; j<map[0].length; j++) {
+                if(map[i][j] !== undefined && map[i][j] !== null) {
+
+                    context.fillStyle = 'hsl(' + 0 + ', 100%, 50%)';
+                    context.fillRect(i*gridGap - x, j*gridGap - y, gridGap, gridGap);
+                }
+            }
+        }
+
+        context.globalAlpha = 1;
+    }
+
     static fixedX(x) {
         return x - global.player.x + global.screenWidth / 2;
     }

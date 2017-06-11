@@ -61,6 +61,8 @@ class Game {
         this.leaderboard = [];
         global.target = {x: player.x, y: player.y};
         global.player = player;
+
+        this.global = global;
     }
 
     onLoad() {
@@ -150,6 +152,9 @@ class Game {
             if (global.gameStart) {
 
                 Drawing.clear();
+
+                Drawing.drawMap(global.map);
+
                 Drawing.drawGrid();
 
 

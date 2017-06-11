@@ -26,6 +26,7 @@ module.exports = {
     nodes : [],
     spiderWeb : [],
     connectWeb : [],
+    map : [],
     socket:null,
 
     // Canvas
