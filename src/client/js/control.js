@@ -55,7 +55,7 @@ class Control {
         console.log('mouse UP');
          console.log(this.mouseTimer);
         clearInterval(this.mouseTimerID);
-        if (global.player.webAttach !== null && this.mouseTimer > 20) {
+        if (global.player.webAttach !== null && this.mouseTimer > 10) {
              console.log('mouseUPShooting');
             global.socket.emit("mouseUPShooting");
         } else {

@@ -153,7 +153,7 @@ class Game {
 
                 Drawing.clear();
 
-                Drawing.drawMap(global.map);
+
 
                 Drawing.drawGrid();
 
@@ -180,6 +180,8 @@ class Game {
 
 
                 global.nodes.map((node) => Drawing.drawNode(node, global.nodeColor));
+
+                 Drawing.drawMap(global.map);
 
                 //Drawing.connectNode(global.connectWeb);
                 global.spiderWeb.forEach(Drawing.drawSpiderWeb);

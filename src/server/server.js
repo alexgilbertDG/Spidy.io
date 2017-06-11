@@ -287,7 +287,7 @@ io.on('connection', function (socket) {
                 x: Math.floor(currentPlayer.x / c.gridGap) * c.gridGap,
                 y: Math.ceil(currentPlayer.y / c.gridGap) * c.gridGap
             };
-        } 
+        }
 
         connectWeb.map((el) => {
             if (el.player.id === currentPlayer.id) {
@@ -295,13 +295,15 @@ io.on('connection', function (socket) {
             }
         });
 
-        map[closest.x / c.gridGap][closest.y / c.gridGap - 1] = currentPlayer.id;
+        map[closest.x / c.gridGap][closest.y / c.gridGap - 1] = {id: currentPlayer.id, hue: currentPlayer.hue};
         fillMap(closest, currentPlayer.webAttach, currentPlayer.startingWeb);
+
 
         currentPlayer.webAttach = null;
         currentPlayer.startingWeb = null;
         sockets[currentPlayer.id].emit("receiveShootingNode", null);
         sockets[currentPlayer.id].emit("receiveShootingNodeStarting", null);
+
     });
 
     function fillMap(point0, point1, point2) {
@@ -465,7 +467,7 @@ function initWebPosition(player) {
 
         var x1 = Math.floor((player.x - x / 2) / c.gridGap);
         var y1 = Math.floor((player.y - y / 2) / c.gridGap);
-        map[x1][y1] =  {id: player.id, hue: player.hue};
+        map[x1][y1] = {id: player.id, hue: player.hue};
 
         x = -x;
         y = -y;
@@ -503,15 +505,33 @@ function isOnOwnWeb(playerID, playerX, playerY) {
 
 function movePlayer(player) {
 
-    if (player.killed) {
-        player.y += killSpeed;
-        player.cells[0].y += killSpeed;
-        return;
-    }
-
 
     var target;
     if (player.webAttach === null) {
+
+        if (!isOnOwnWeb(player.id, player.x, player.y)) {
+            if (player.killed) {
+                player.y += killSpeed;
+                player.cells[0].y += killSpeed;
+                if (player.y > c.gameHeight) {
+                    player.killed = true;
+                    removePlayerWeb(player);
+                    users.map((user, index) => {
+                        if (user.id === player.id) {
+                            users.splice(index, 1);
+                        }
+                    });
+                    player.killed = false;
+                    io.emit('playerDied', {name: player.name});
+                    sockets[player.id].emit('RIP');
+
+
+                }
+                return;
+            }
+        } else {
+            player.killed = false;
+        }
 
         var x = 0, y = 0;
         for (var i = 0; i < player.cells.length; i++) {
@@ -731,8 +751,8 @@ function moveloop() {
             web.endPoint.y += web.dir.y * c.spiderWebSpeed;
         }
         else {
-            web.endPoint.x += (web.player.x - web.endPoint.x) * 0.2;
-            web.endPoint.y += (web.player.y - web.endPoint.y) * 0.2;
+            web.endPoint.x += (web.player.x - web.endPoint.x) * 0.3;
+            web.endPoint.y += (web.player.y - web.endPoint.y) * 0.3;
         }
 
         let x = web.endPoint.x - web.player.x;
