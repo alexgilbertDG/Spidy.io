@@ -50,6 +50,7 @@ var pool = sql.createConnection({
 });
 
 var spiderColorsHue = [0, 10, 30, 50, 70, 100, 190, 210, 240, 270, 300, 320];
+var killSpeed = 10;
 
 //log sql errors
 pool.connect(function (err) {
@@ -61,11 +62,9 @@ pool.connect(function (err) {
 app.use(express.static(__dirname + '/../client'));
 
 
-
 Math.dist = function (x1, y1, x2, y2) {
-    return Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 };
-
 
 
 function addNode() {
@@ -100,10 +99,11 @@ io.on('connection', function (socket) {
         h: c.defaultPlayerMass,
         cells: [],
         massTotal: c.defaultPlayerMass,
-        webAttach : null,
+        webAttach: null,
         startingWeb: null,
-        hue : spiderColorsHue[Math.round(Math.random() * spiderColorsHue.length)],
+        hue: spiderColorsHue[Math.round(Math.random() * spiderColorsHue.length)],
         lastHeartbeat: new Date().getTime(),
+        killed: false,
         target: {
             x: 0,
             y: 0
@@ -256,32 +256,50 @@ io.on('connection', function (socket) {
 
     socket.on("mouseUPShooting", function () {
         if (currentPlayer.webAttach === null) return;
+        let closest = {x:0,y:0};
 
-        if (currentPlayer.x > c.gameWidth+1 || currentPlayer.x < 0 || currentPlayer.y > c.gameHeight+1 || currentPlayer.y < 0) {
-            currentPlayer.webAttach = null;
-             currentPlayer.startingWeb = null;
-            sockets[currentPlayer.id].emit("receiveShootingNode", null);
-             sockets[currentPlayer.id].emit("receiveShootingNodeStarting", null);
-            return;
+        //Check boundaries if player is outside map
+        if (currentPlayer.x > c.gameWidth + 1) {
+
+            closest = {
+                x: c.gameWidth,
+                y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
+            };
+
+        } else if (currentPlayer.x < 0) {
+            closest = {
+                x: 0,
+                y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
+            };
+        } else if (currentPlayer.y > c.gameHeight + 1) {
+            closest = {
+                x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
+                y: c.gameHeight,
+            };
+        } else if (currentPlayer.y < 0) {
+            closest = {
+                x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
+                y: 0
+            };
+        } else {
+            //return closest node point on the grid
+            closest = {
+                x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
+                y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
+            };
         }
-
-
-        //return closest node point on the grid
-        let closest = {
-            x: Math.round(currentPlayer.x / c.gridGap) * c.gridGap,
-            y: Math.round(currentPlayer.y / c.gridGap) * c.gridGap
-        };
 
 
         connectWeb.map((el) => {
             if (el.player.id === currentPlayer.id) {
                 el.nodes.push(closest, currentPlayer.startingWeb, currentPlayer.webAttach);
+
                 fillMap(closest, currentPlayer.webAttach, currentPlayer.startingWeb, currentPlayer.id);
             }
         });
 
         currentPlayer.webAttach = null;
-         currentPlayer.startingWeb = null;
+        currentPlayer.startingWeb = null;
         sockets[currentPlayer.id].emit("receiveShootingNode", null);
         sockets[currentPlayer.id].emit("receiveShootingNodeStarting", null);
     });
@@ -349,8 +367,6 @@ io.on('connection', function (socket) {
     });
 
 
-
-
     //called when a player starts shooting web
     socket.on("shooting", function (direction, dist) {
         currentPlayer.lastHeartbeat = new Date().getTime();
@@ -362,6 +378,22 @@ io.on('connection', function (socket) {
                 return;
             }
         }
+
+        users.map((player, index) => {
+            if (player.id !== currentPlayer.id) {
+                if (Math.dist(player.x, player.y, (currentPlayer.x + dist.x), (currentPlayer.y + dist.y)) < 10) {
+                    console.log(currentPlayer.name + ' has KILLED ' + player.name);
+                    player.killed = true;
+                    removePlayerWeb(player);
+                    setTimeout(()=>{
+                        users.splice(index, 1);
+                        player.killed = false;
+                        io.emit('playerDied', {name: player.name});
+                        sockets[player.id].emit('RIP');
+                    }, 1000);
+                }
+            }
+        });
 
         let position = {
             x: Math.round((currentPlayer.x + dist.x) / c.gridGap) * c.gridGap,
@@ -390,12 +422,12 @@ io.on('connection', function (socket) {
 
         currentPlayer.webAttach = position;
         sockets[currentPlayer.id].emit("receiveShootingNode", position);
-         sockets[currentPlayer.id].emit("receiveShootingNodeStarting", currentPlayer.startingWeb);
+        sockets[currentPlayer.id].emit("receiveShootingNodeStarting", currentPlayer.startingWeb);
     });
 });
 
 function removePlayerWeb(player) {
-    connectWeb = connectWeb.filter((web)=> {
+    connectWeb = connectWeb.filter((web) => {
         return web.player.id !== player.id;
     });
 }
@@ -412,9 +444,12 @@ function initWebPosition(player) {
                 player: player,
                 nodes: [{x: player.x - x, y: player.y}, {x: player.x, y: player.y}, {x: player.x, y: player.y - y}]
             });
-            idx = connectWeb.length-1;
+            idx = connectWeb.length - 1;
         } else {
-            connectWeb[idx].nodes.push({x: player.x - x, y: player.y}, {x: player.x, y: player.y}, {x: player.x, y: player.y - y});
+            connectWeb[idx].nodes.push({x: player.x - x, y: player.y}, {x: player.x, y: player.y}, {
+                x: player.x,
+                y: player.y - y
+            });
         }
 
         x = -x;
@@ -424,32 +459,38 @@ function initWebPosition(player) {
 }
 
 function isOnOwnWeb(playerID, playerX, playerY) {
-    let mapX = Math.floor( playerX / c.gridGap );
-    let mapY = Math.floor( playerY / c.gridGap );
+    let mapX = Math.floor(playerX / c.gridGap);
+    let mapY = Math.floor(playerY / c.gridGap);
 
     //if web dosnt have player id is not own web
-    if( map[mapX][mapY] != playerID)
+    if (map[mapX][mapY] != playerID)
         return false;
     else
         return true;
 
     /*
-    //if all nodes are connected then player is in web
-    if( map[mapX][mapY].nodes.length == 4 )
-        return true;
-    else if( map[mapX][mapY].nodes.length < 3 )
-        return false;
+     //if all nodes are connected then player is in web
+     if( map[mapX][mapY].nodes.length == 4 )
+     return true;
+     else if( map[mapX][mapY].nodes.length < 3 )
+     return false;
 
-    let localX = playerX % gridGap;
-    let localY = playerY % gridGap;
+     let localX = playerX % gridGap;
+     let localY = playerY % gridGap;
 
-    let pos = localY < localX;
-    let neg = localY < gridGap - localX;
+     let pos = localY < localX;
+     let neg = localY < gridGap - localX;
 
-    */
+     */
 }
 
 function movePlayer(player) {
+
+    if (player.killed) {
+        player.y += killSpeed;
+        player.cells[0].y += killSpeed;
+        return;
+    }
 
     var target;
     if (player.webAttach === null) {
@@ -538,7 +579,7 @@ function movePlayer(player) {
 
     if (player.webAttach !== null) {
 
-        var pos = {x:player.x, y:player.y};
+        var pos = {x: player.x, y: player.y};
 
 
         target = {
@@ -551,15 +592,15 @@ function movePlayer(player) {
         //Slower when he is far away
         var diffX = Math.abs(player.webAttach.x - pos.x);
         var value = diffX > 0.2 ? 10 + (r / 100) + (1 / diffX * 15) : 3;
-        if (target.x>0) {
-            pos.x+=value;
+        if (target.x > 0) {
+            pos.x += value;
         }
-        else if (target.x<0)  {
-            pos.x-=value;
+        else if (target.x < 0) {
+            pos.x -= value;
         }
 
-        if (target.y>0) {
-            pos.y+=6;
+        if (target.y > 0) {
+            pos.y += 6;
         }
 
 
@@ -570,6 +611,8 @@ function movePlayer(player) {
         player.cells[0].x = player.x;
         player.cells[0].y = player.y;
     }
+
+
 
 }
 
@@ -782,7 +825,7 @@ function sendUpdates() {
                                 x: f.x,
                                 y: f.y,
                                 cells: f.cells,
-                                webAttach:f.webAttach,
+                                webAttach: f.webAttach,
                                 massTotal: Math.round(f.massTotal),
                                 hue: f.hue,
                                 name: f.name
@@ -792,7 +835,7 @@ function sendUpdates() {
                                 x: f.x,
                                 y: f.y,
                                 cells: f.cells,
-                                webAttach:f.webAttach,
+                                webAttach: f.webAttach,
                                 massTotal: Math.round(f.massTotal),
                                 hue: f.hue
                             };

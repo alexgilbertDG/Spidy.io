@@ -163,7 +163,7 @@ class Drawing {
 
 
         context.lineWidth = 2;
-        context.strokeStyle = 'hsl(' + web.player.hue + ', 100%, 45%)';
+        context.strokeStyle = 'hsl(' + web.player.hue + ', 100%, 50%)';
         context.fillStyle = 'hsl(' + web.player.hue + ', 100%, 50%)';
 
         context.beginPath();
@@ -184,7 +184,7 @@ class Drawing {
     static shootedWeb(player) {
         if (player.webAttach === null) return;
         context.lineWidth = 2;
-        context.strokeStyle = 'hsl(' + player.hue + ', 100%, 45%)';
+        context.strokeStyle = 'hsl(' + player.hue + ', 100%, 50%)';
         context.fillStyle = 'hsl(' + player.hue + ', 100%, 50%)';
 
         context.beginPath();
@@ -193,7 +193,7 @@ class Drawing {
         context.stroke();
         context.closePath();
 
-         Drawing.drawCircle(player.webAttach.x, player.webAttach.y, 10, global.nodeSides, true);
+        Drawing.drawCircle(player.webAttach.x, player.webAttach.y, 10, global.nodeSides, true);
     }
 
     static connectNode(arr) {
@@ -210,18 +210,63 @@ class Drawing {
 
                 context.beginPath();
                 context.moveTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
-                context.lineTo(Drawing.fixedX(second.x), Drawing.fixedY(second.y));
+
                 context.lineTo(Drawing.fixedX(third.x), Drawing.fixedY(third.y));
-                context.lineTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
+                context.lineTo(Drawing.fixedX(second.x), Drawing.fixedY(second.y));
+                ///context.lineTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
                 context.stroke();
                 context.closePath();
 
+                Drawing.createSpiderWebEffect(first, second, third);
+
                 Drawing.drawCircle(first.x, first.y, 10, global.nodeSides, true);
                 Drawing.drawCircle(second.x, second.y, 10, global.nodeSides, true);
-                Drawing.drawCircle(third.x, third.y,10 , global.nodeSides, true);
+                Drawing.drawCircle(third.x, third.y, 10, global.nodeSides, true);
 
             });
         });
+
+    }
+
+    static createSpiderWebEffect(closest, startingWeb, webAttach) {
+        //50% of the mid point will create the effect
+        //the lower, the less the curve will be visible
+        let accent = 50;
+        let distClosest = Math.sqrt(Math.pow(closest.x - webAttach.x, 2) + Math.pow(closest.y - webAttach.y, 2));
+        let distStarting = Math.sqrt(Math.pow(startingWeb.x - webAttach.x, 2) + Math.pow(startingWeb.y - webAttach.y, 2));
+
+        let numberOfPoint = 10;
+        let points = [];
+        for (var i = 0; i < distClosest; i += distClosest / numberOfPoint) {
+            let ratio = i / distClosest;
+            let point1 = {
+                x: (((closest.x - webAttach.x) * ratio) + webAttach.x),
+                y: (((closest.y - webAttach.y) * ratio) + webAttach.y)
+            };
+            let point2 = {
+                x: (((startingWeb.x - webAttach.x) * ratio) + webAttach.x),
+                y: (((startingWeb.y - webAttach.y) * ratio) + webAttach.y)
+            };
+            points.push([point1, point2]);
+        }
+
+        points.map((arr) => {
+            context.beginPath();
+            context.moveTo(Drawing.fixedX(arr[0].x), Drawing.fixedY(arr[0].y));
+            let midPoint = {x: (arr[0].x + arr[1].x) / 2, y: (arr[0].y + arr[1].y) / 2};
+            let dist = Math.sqrt(Math.pow(midPoint.x - webAttach.x, 2) + Math.pow(midPoint.y - webAttach.y, 2));
+            let curveAccent = dist / 100 * accent;
+            let ratio = curveAccent / dist;
+            let curvePoint = {
+                x: (((midPoint.x - webAttach.x) * ratio) + webAttach.x),
+                y: (((midPoint.y - webAttach.y) * ratio) + webAttach.y)
+            };
+            context.quadraticCurveTo(Drawing.fixedX(curvePoint.x), Drawing.fixedY(curvePoint.y), Drawing.fixedX(arr[1].x), Drawing.fixedY(arr[1].y));
+            //context.lineTo(Drawing.fixedX(arr[1].x), Drawing.fixedY(arr[1].y));
+            context.stroke();
+            context.closePath();
+        });
+
 
     }
 
@@ -236,18 +281,20 @@ class Drawing {
         Drawing.drawCircle(node.x, node.y, node.radius, global.nodeSides, true);
     }
 
-    static drawSvg(order) {
+    static drawPlayers(order) {
 
         var size = 40;
-        var img = new Image(size, size);
+
 
         var angleInRadians, angleInDeg, x, y;
         for (var z = 0; z < order.length; z++) {
             var userCurrent = global.users[order[z].nCell];
             var cellCurrent = userCurrent.cells[order[z].nDiv];
 
+
             //Grab png for the same hue
             if (isNaN(userCurrent.hue)) userCurrent.hue = 0;
+            var img = new Image(size, size);
             img.src = "img/spider_" + userCurrent.hue + ".png";
 
             if (userCurrent.webAttach !== null) {
@@ -257,9 +304,9 @@ class Drawing {
                 angleInDeg += 90;
                 angleInRadians = angleInDeg * Math.PI / 180;
 
-                x = (cellCurrent.x - (global.player.x - (global.screenWidth / 2)));
-                y = (cellCurrent.y - (global.player.y - (global.screenHeight / 2)));
-                // Drawing.rotateAndPaintImage(img, angleInRadians, x, y, img.width / 2, img.height / 2);
+                x = (userCurrent.x - (global.player.x - (global.screenWidth / 2)));
+                y = (userCurrent.y - (global.player.y - (global.screenHeight / 2)));
+
 
                 context.translate(x, y);
                 context.rotate(angleInRadians);
@@ -268,14 +315,16 @@ class Drawing {
                 context.translate(-x, -y);
 
             } else {
-                context.drawImage(img, (cellCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size / 2),
-                    (cellCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size / 2));
+                context.drawImage(img, (userCurrent.x - (global.player.x - (global.screenWidth / 2))) - (size / 2),
+                    (userCurrent.y - (global.player.y - (global.screenHeight / 2))) - (size / 2));
             }
+
+
         }
     }
 
 
-    static drawPlayers(order) {
+    static old_drawPlayers(order) {
         var start = {
             x: global.player.x - (global.screenWidth / 2),
             y: global.player.y - (global.screenHeight / 2)
