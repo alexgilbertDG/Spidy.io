@@ -25,7 +25,10 @@ var tree = quadtree(0, 0, c.gameWidth, c.gameHeight);
 
 var users = [];
 var node = [];
-var map = [];
+var map = new Array(Math.floor(c.gameWidth/c.gridGap));
+for(var i=0; i<map.length; i++) {
+    map[i] = new Array(Math.floor(c.gameHeight/c.gridGap));
+}
 var spiderWeb = [];
 var connectWeb = [];
 
@@ -273,7 +276,7 @@ io.on('connection', function (socket) {
         connectWeb.map((el) => {
             if (el.player.id === currentPlayer.id) {
                 el.nodes.push(closest, currentPlayer.startingWeb, currentPlayer.webAttach);
-                fillMap(closest, currentPlayer.webAttach, middle);
+                fillMap(closest, currentPlayer.webAttach, currentPlayer.startingWeb, currentPlayer.id);
             }
         });
 
@@ -283,39 +286,58 @@ io.on('connection', function (socket) {
         sockets[currentPlayer.id].emit("receiveShootingNodeStarting", null);
     });
 
-    function fillMap(point1,point2,point3) {
+    function fillMap(point0,point1,point2, ID) {
         
-        var p1 = {}, p2 = {}, p3 = {};
-        p1.x = point1.x / c.gridGap;
-        p1.y = point1.y / c.gridGap;
-        p2.x = point2.x / c.gridGap;
-        p2.y = point2.y / c.gridGap;
-        p3.x = point3.x / c.gridGap;
-        p3.y = point3.y / c.gridGap;
+        var p0 = {}, p1 = {}, p2 = {};
+        //a -> b
+        p0.x = point1.x / c.gridGap - point0.x / c.gridGap;
+        p0.y = point1.y / c.gridGap - point0.y / c.gridGap;
+        //a -> c
+        p1.x = point2.x / c.gridGap - point0.x / c.gridGap;
+        p1.y = point2.y / c.gridGap - point0.y / c.gridGap;
+        //a -> p
+        p2.x =  - point0.x / c.gridGap;
+        p2.y =  - point0.y / c.gridGap;
 
-        console.log("fillMap() ---------------");
+        var dot00, dot01, dot02, dot11, dot12;
+        dot00 = p0.x*p0.x + p0.y*p0.y;
+        dot01 = p0.x*p1.x + p0.y*p1.y;
+        dot11 = p1.x*p1.x + p1.y*p1.y;
 
-        console.log(p1.x+","+p1.y);
-        console.log(p2.x+","+p2.y);
-        console.log(p3.x+","+p3.y);
-        
-        var m = (p1.y - p2.y) / (p1.x - p2.x);
-        var B = p1.y - m * p1.x;
-        var bool = p3.y < p3.x * m + B;
+        //console.log("fillMap() ---------------");
 
-        var maxX = Math.max(p1.x, p2.x);
-        var minX = Math.min(p1.x, p2.x);
-        var maxY = Math.max(p1.y, p2.y);
-        var minY = Math.min(p1.y, p2.y);
+        //console.log(p0.x+","+p0.y);
+        //console.log(p1.x+","+p1.y);
 
-        console.log("squares ---------------");
-        for(var x = minX; x < maxX; x++)
+        var maxX = Math.max(point0.x / c.gridGap, point1.x / c.gridGap, point2.x / c.gridGap);
+        var minX = Math.min(point0.x / c.gridGap, point1.x / c.gridGap, point2.x / c.gridGap);
+        var maxY = Math.max(point0.y / c.gridGap, point1.y / c.gridGap, point2.y / c.gridGap);
+        var minY = Math.min(point0.y / c.gridGap, point1.y / c.gridGap, point2.y / c.gridGap);
+
+        //console.log(`${minX}, ${maxX}`);
+        //console.log(`${minY}, ${maxY}`);
+
+        //console.log("squares ---------------");
+        for(var x = minX; x < maxX; x++) {
             for(var y = minY; y < maxY; y++) {
-                var mod = bool? +1: 0;
-                if(y+mod < x+mod * m + B == bool)
-                    console.log(x+","+y);
-                    //map[x][y] = ID;
+
+                p2.x = (x+0.5) - point0.x / c.gridGap;
+                p2.y = (y+0.5) - point0.y / c.gridGap;
+                dot02 = p0.x*p2.x + p0.y*p2.y;
+                dot12 = p1.x*p2.x + p1.y*p2.y;
+
+                var invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+                var u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+                var v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+
+                //console.log(`(${p2.x}, ${p2.y}) u:${u} v:${v}`);
+
+                if( (u >= 0) && (v >= 0) && (u + v <= 1) ) {
+                    //console.log(x+","+y);
+                    map[x][y] = ID;
+                }
             }
+        }
 
     }
 
@@ -782,6 +804,23 @@ function sendUpdates() {
                 return f;
             });
 
+        var min = {};
+        min.x = Math.floor((u.x - u.screenWidth / 2) / c.gridGap);
+        min.y = Math.floor((u.y - u.screenHeight / 2) / c.gridGap);
+        
+        var max = {};
+        max.x = Math.ceil((u.x + u.screenWidth / 2) / c.gridGap);
+        max.y = Math.ceil((u.y + u.screenHeight / 2) / c.gridGap);
+
+        if(min.x < 0) min.x = 0;
+        if(min.y < 0) min.y = 0;
+        if(max.x > c.gameWidth/c.gridGap) max.x = c.gameWidth/c.gridGap;
+        if(max.x > c.gameHeight/c.gridGap) max.x = c.gameHeight/c.gridGap;
+        
+        var visibleMap = map.slice(min.x, max.x+1);
+        for(var i=0; i<visibleMap.length; i++) {
+            visibleMap[i] = visibleMap[i].slice(min.y, max.y+1); 
+        }
 
         sockets[u.id].emit('serverTellPlayerMove', visibleCells, visibleNode, visibleSpiderWeb, visibleConnectWeb);
         if (leaderboardChanged) {
