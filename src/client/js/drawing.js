@@ -210,9 +210,10 @@ class Drawing {
 
                 context.beginPath();
                 context.moveTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
-                context.lineTo(Drawing.fixedX(second.x), Drawing.fixedY(second.y));
+
                 context.lineTo(Drawing.fixedX(third.x), Drawing.fixedY(third.y));
-                context.lineTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
+                context.lineTo(Drawing.fixedX(second.x), Drawing.fixedY(second.y));
+                ///context.lineTo(Drawing.fixedX(first.x), Drawing.fixedY(first.y));
                 context.stroke();
                 context.closePath();
 
@@ -228,6 +229,9 @@ class Drawing {
     }
 
     static createSpiderWebEffect(closest, startingWeb, webAttach) {
+        //50% of the mid point will create the effect
+        //the lower, the less the curve will be visible
+        let accent = 50;
         let distClosest = Math.sqrt(Math.pow(closest.x - webAttach.x, 2) + Math.pow(closest.y - webAttach.y, 2));
         let distStarting = Math.sqrt(Math.pow(startingWeb.x - webAttach.x, 2) + Math.pow(startingWeb.y - webAttach.y, 2));
 
@@ -249,7 +253,16 @@ class Drawing {
         points.map((arr) => {
             context.beginPath();
             context.moveTo(Drawing.fixedX(arr[0].x), Drawing.fixedY(arr[0].y));
-            context.lineTo(Drawing.fixedX(arr[1].x), Drawing.fixedY(arr[1].y));
+            let midPoint = {x: (arr[0].x + arr[1].x) / 2, y: (arr[0].y + arr[1].y) / 2};
+            let dist = Math.sqrt(Math.pow(midPoint.x - webAttach.x, 2) + Math.pow(midPoint.y - webAttach.y, 2));
+            let curveAccent = dist / 100 * accent;
+            let ratio = curveAccent / dist;
+            let curvePoint = {
+                x: (((midPoint.x - webAttach.x) * ratio) + webAttach.x),
+                y: (((midPoint.y - webAttach.y) * ratio) + webAttach.y)
+            };
+            context.quadraticCurveTo(Drawing.fixedX(curvePoint.x), Drawing.fixedY(curvePoint.y), Drawing.fixedX(arr[1].x), Drawing.fixedY(arr[1].y));
+            //context.lineTo(Drawing.fixedX(arr[1].x), Drawing.fixedY(arr[1].y));
             context.stroke();
             context.closePath();
         });
