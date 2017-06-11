@@ -91,13 +91,13 @@ class SocketClient {
              this.player.startingWeb = pos;
          });
 
-         socket.on('receiveShootingNode', function (pos) {
-             this.player.webAttach = pos;
-         });
+        socket.on('receiveShootingNode', function (pos) {
+         this.player.webAttach = pos;
+        });
 
 
         // Handle movement.
-        socket.on('serverTellPlayerMove', function (userData, nodesList, webList, connectWeb) {
+        socket.on('serverTellPlayerMove', function (userData, nodesList, webList, connectWeb, map) {
             var playerData;
             for (var i = 0; i < userData.length; i++) {
                 if (typeof(userData[i].id) === "undefined") {
@@ -121,6 +121,7 @@ class SocketClient {
             global.nodes = nodesList;
             global.spiderWeb = webList;
             global.connectWeb = connectWeb;
+            global.map = map;
         });
 
         // Death.
