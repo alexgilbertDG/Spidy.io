@@ -431,6 +431,14 @@ function removePlayerWeb(player) {
     connectWeb = connectWeb.filter((web) => {
         return web.player.id !== player.id;
     });
+
+    for(var i=0; i<map.length; i++) {
+        for(var j=0; j<map[0].length; j++) {
+            if(player.id == map[i][j]) {
+                map[i][j] = null;
+            }
+        }
+    }
 }
 
 function initWebPosition(player) {
@@ -452,6 +460,10 @@ function initWebPosition(player) {
                 y: player.y
             });
         }
+
+        var x1 = Math.floor((player.x - x/2) / c.gridGap);
+        var y1 = Math.floor((player.y - y/2) / c.gridGap);
+        map[x1][y1] = player.id;
 
         x = -x;
         y = -y;
