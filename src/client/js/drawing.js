@@ -232,10 +232,13 @@ class Drawing {
         //50% of the mid point will create the effect
         //the lower, the less the curve will be visible
         let accent = 50;
+        //Gap between each line
+        let lineGap = 30;
+
         let distClosest = Math.sqrt(Math.pow(closest.x - webAttach.x, 2) + Math.pow(closest.y - webAttach.y, 2));
         let distStarting = Math.sqrt(Math.pow(startingWeb.x - webAttach.x, 2) + Math.pow(startingWeb.y - webAttach.y, 2));
 
-        let numberOfPoint = 10;
+        let numberOfPoint = distClosest / lineGap;
         let points = [];
         for (var i = 0; i < distClosest; i += distClosest / numberOfPoint) {
             let ratio = i / distClosest;
@@ -262,12 +265,9 @@ class Drawing {
                 y: (((midPoint.y - webAttach.y) * ratio) + webAttach.y)
             };
             context.quadraticCurveTo(Drawing.fixedX(curvePoint.x), Drawing.fixedY(curvePoint.y), Drawing.fixedX(arr[1].x), Drawing.fixedY(arr[1].y));
-            //context.lineTo(Drawing.fixedX(arr[1].x), Drawing.fixedY(arr[1].y));
             context.stroke();
             context.closePath();
         });
-
-
     }
 
 

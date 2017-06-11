@@ -379,6 +379,7 @@ io.on('connection', function (socket) {
             }
         }
 
+        //Check if the player has clicked on a other player, if so kill him
         users.map((player, index) => {
             if (player.id !== currentPlayer.id) {
                 if (Math.dist(player.x, player.y, (currentPlayer.x + dist.x), (currentPlayer.y + dist.y)) < 10) {
@@ -442,13 +443,13 @@ function initWebPosition(player) {
         if (i === 0) {
             connectWeb.push({
                 player: player,
-                nodes: [{x: player.x - x, y: player.y}, {x: player.x, y: player.y}, {x: player.x, y: player.y - y}]
+                nodes: [{x: player.x - x, y: player.y}, {x: player.x, y: player.y - y}, {x: player.x, y: player.y}]
             });
             idx = connectWeb.length - 1;
         } else {
-            connectWeb[idx].nodes.push({x: player.x - x, y: player.y}, {x: player.x, y: player.y}, {
+            connectWeb[idx].nodes.push({x: player.x - x, y: player.y}, {x: player.x, y: player.y -y}, {
                 x: player.x,
-                y: player.y - y
+                y: player.y
             });
         }
 
@@ -717,14 +718,13 @@ function moveloop() {
         let x = web.endPoint.x - web.player.x;
         let y = web.endPoint.y - web.player.y;
         let dist = Math.sqrt(x * x + y * y);
-        if (web.isReturning && dist < 20) {
+        if (web.isReturning && dist < 27) {
             spiderWeb.splice(i, 1);
             i--;
         }
         else if (dist > c.spiderWebRange) {
             web.isReturning = true;
         }
-
     }
 }
 
