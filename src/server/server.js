@@ -50,7 +50,7 @@ var pool = sql.createConnection({
 });
 
 var spiderColorsHue = [0, 10, 30, 50, 70, 100, 190, 210, 240, 270, 300, 320];
-var killSpeed = 10;
+var killSpeed = 12;
 
 //log sql errors
 pool.connect(function (err) {
@@ -104,6 +104,7 @@ io.on('connection', function (socket) {
         hue: spiderColorsHue[Math.round(Math.random() * spiderColorsHue.length)],
         lastHeartbeat: new Date().getTime(),
         killed: false,
+        controlNodes:0,
         target: {
             x: 0,
             y: 0
@@ -260,7 +261,6 @@ io.on('connection', function (socket) {
 
         //Check boundaries if player is outside map
         if (currentPlayer.x > c.gameWidth + 1) {
-
             closest = {
                 x: c.gameWidth - c.gridGap,
                 y: Math.ceil(currentPlayer.y / c.gridGap) * c.gridGap
@@ -295,7 +295,9 @@ io.on('connection', function (socket) {
             }
         });
 
-        map[closest.x / c.gridGap][closest.y / c.gridGap - 1] = {id: currentPlayer.id, hue: currentPlayer.hue};
+        let safePoint = checkBoundariesForMap(closest.x / c.gridGap, closest.y / c.gridGap - 1);
+        map[safePoint.x][safePoint.y] = {id: currentPlayer.id, hue: currentPlayer.hue};
+        currentPlayer.controlNodes++;
         fillMap(closest, currentPlayer.webAttach, currentPlayer.startingWeb);
 
 
@@ -354,7 +356,9 @@ io.on('connection', function (socket) {
 
                 if ((u >= 0) && (v >= 0) && (u + v <= 1)) {
                     //console.log(x+","+y);
-                    map[x][y] = {id: currentPlayer.id, hue: currentPlayer.hue};
+                    let safePoint = checkBoundariesForMap(x, y);
+                    currentPlayer.controlNodes++;
+                    map[safePoint.x][safePoint.y] = {id: currentPlayer.id, hue: currentPlayer.hue};
                 }
             }
         }
@@ -467,7 +471,9 @@ function initWebPosition(player) {
 
         var x1 = Math.floor((player.x - x / 2) / c.gridGap);
         var y1 = Math.floor((player.y - y / 2) / c.gridGap);
-        map[x1][y1] = {id: player.id, hue: player.hue};
+        let safePoint = checkBoundariesForMap(x1, y1);
+        player.controlNodes++;
+        map[safePoint.x][safePoint.y] = {id: player.id, hue: player.hue};
 
         x = -x;
         y = -y;
@@ -479,28 +485,27 @@ function isOnOwnWeb(playerID, playerX, playerY) {
     let mapX = Math.floor(playerX / c.gridGap);
     let mapY = Math.floor(playerY / c.gridGap);
 
-    //if web dosnt have player id is not own web
-    if (map[mapX][mapY] !== null && map[mapX][mapY] !== undefined) {
-        if (map[mapX][mapY].id === playerID) {
+    //if web dosent have player id is not own web
+    let safePoint = checkBoundariesForMap(mapX, mapY);
+    if (map[safePoint.x][safePoint.y] !== null && map[safePoint.x][safePoint.y] !== undefined) {
+        if (map[safePoint.x][safePoint.y].id === playerID) {
             return true;
         }
     }
     return false;
+}
 
-    /*
-     //if all nodes are connected then player is in web
-     if( map[mapX][mapY].nodes.length == 4 )
-     return true;
-     else if( map[mapX][mapY].nodes.length < 3 )
-     return false;
-
-     let localX = playerX % gridGap;
-     let localY = playerY % gridGap;
-
-     let pos = localY < localX;
-     let neg = localY < gridGap - localX;
-
-     */
+function checkBoundariesForMap(x, y) {
+    let _x = x, _y = y;
+    if (_x < 0)
+        _x = 0;
+    if (_y < 0)
+        _y = 0;
+    if (_x > map[0].length - 1)
+        _x = map[0].length - 1;
+    if (_y > map[1].length - 1)
+        _y = map[1].length - 1;
+    return {x: _x, y: _y};
 }
 
 function movePlayer(player) {
@@ -758,7 +763,7 @@ function moveloop() {
         let x = web.endPoint.x - web.player.x;
         let y = web.endPoint.y - web.player.y;
         let dist = Math.sqrt(x * x + y * y);
-        if (web.isReturning && dist < 27) {
+        if (web.isReturning && dist < 35) {
             spiderWeb.splice(i, 1);
             i--;
         }
@@ -771,7 +776,7 @@ function moveloop() {
 function gameloop() {
     if (users.length > 0) {
         users.sort(function (a, b) {
-            return b.massTotal - a.massTotal;
+            return b.controlNodes - a.controlNodes;
         });
 
         var topUsers = [];
@@ -887,6 +892,7 @@ function sendUpdates() {
                 return f;
             });
 
+
         var min = {};
         min.x = Math.floor((u.x - u.screenWidth / 2) / c.gridGap);
         min.y = Math.floor((u.y - u.screenHeight / 2) / c.gridGap);
@@ -898,7 +904,7 @@ function sendUpdates() {
         if (min.x < 0) min.x = 0;
         if (min.y < 0) min.y = 0;
         if (max.x > c.gameWidth / c.gridGap) max.x = c.gameWidth / c.gridGap;
-        if (max.x > c.gameHeight / c.gridGap) max.x = c.gameHeight / c.gridGap;
+        if (max.y > c.gameHeight / c.gridGap) max.y = c.gameHeight / c.gridGap;
 
         var visibleMap = map.slice(min.x, max.x + 1);
         for (var i = 0; i < visibleMap.length; i++) {

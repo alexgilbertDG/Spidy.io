@@ -192,10 +192,10 @@ class Drawing {
 
                     var topLeftX = (x + i * gridGap) - global.player.x + global.screenWidth / 2;
                     var topLeftY = (y + j * gridGap) - global.player.y + global.screenHeight / 2;
-                    context.globalAlpha = 0.2;
-                    context.fillStyle = 'hsl(' + map[i][j].hue + ', 50%, 50%)';
-                    context.fillRect(topLeftX, topLeftY, gridGap, gridGap);
-                    context.globalAlpha = 1;
+                    //context.globalAlpha = 0.2;
+                    //context.fillStyle = 'hsl(' + map[i][j].hue + ', 50%, 50%)';
+                    //context.fillRect(topLeftX, topLeftY, gridGap, gridGap);
+                    //context.globalAlpha = 1;
 
                     context.strokeStyle = 'hsl(' + map[i][j].hue + ', 100%, 50%)';
                     context.fillStyle = 'hsl(' + map[i][j].hue + ', 100%, 45%)';
@@ -229,7 +229,6 @@ class Drawing {
                     Drawing.drawCircle(bottomLeft.x, bottomLeft.y, 10, global.nodeSides, true);
                     Drawing.drawCircle(topRight.x, topRight.y, 10, global.nodeSides, true);
                     Drawing.drawCircle(bottomRight.x, bottomRight.y, 10, global.nodeSides, true);
-
 
                 }
             }

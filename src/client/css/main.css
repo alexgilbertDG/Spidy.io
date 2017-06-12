@@ -106,7 +106,7 @@ div {
     box-shadow: 0 0 3px 1px #DDDDDD;
 }
 
-#startButton, #spectateButton {
+#startButton {
     position: relative;
     margin: auto;
     margin-top: 10px;
@@ -117,22 +117,21 @@ div {
     color: white;
     text-align: center;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-    background: #2ecc71;
+    background: #69d022;
     border: 0;
-    border-bottom: 2px solid #28be68;
+    border-bottom: 2px solid #489811;
     cursor: pointer;
-    -webkit-box-shadow: inset 0 -2px #28be68;
-    box-shadow: inset 0 -2px #28be68;
+    -webkit-box-shadow: inset 0 -2px #489811;
+    box-shadow: inset 0 -2px #489811;
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     margin-bottom: 10px;
 }
 
-#spectateButton:active, #spectateButton:hover,
 #startButton:active, #startButton:hover {
     top: 1px;
-    background: #55D88B;
+    background: #489811;
     outline: none;
     -webkit-box-shadow: none;
     box-shadow: none;
@@ -149,12 +148,12 @@ div {
     color: white;
     text-align: center;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-    background: #2ecc71;
+    background: #ff4646;
     border: 0;
-    border-bottom: 2px solid #28be68;
+    border-bottom: 2px solid #e12822;
     cursor: pointer;
-    -webkit-box-shadow: inset 0 -2px #28be68;
-    box-shadow: inset 0 -2px #28be68;
+    -webkit-box-shadow: inset 0 -2px #e12822;
+    box-shadow: inset 0 -2px #e12822;
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
@@ -163,7 +162,7 @@ div {
 
 #settingsButton:active, #settingsButton:hover {
     top: 1px;
-    background: #55D88B;
+    background: #e12822;
     outline: none;
     -webkit-box-shadow: none;
     box-shadow: none;
@@ -227,4 +226,10 @@ input [type="image"]:focus{
 *:focus {
  outline: 1px solid transparent;
  border-style: none;
+}
+
+
+.logo {
+    display: block;
+    margin:  3rem auto 0 auto;
 }
