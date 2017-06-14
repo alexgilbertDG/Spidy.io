@@ -104,7 +104,7 @@ io.on('connection', function (socket) {
         hue: spiderColorsHue[Math.round(Math.random() * spiderColorsHue.length)],
         lastHeartbeat: new Date().getTime(),
         killed: false,
-        controlNodes:0,
+        controlNodes: 0,
         target: {
             x: 0,
             y: 0
@@ -726,7 +726,7 @@ function tickPlayer(currentPlayer) {
         );
 
 
-        if (typeof(currentCell.speed) == "undefined")
+        if (typeof(currentCell.speed) === "undefined")
             currentCell.speed = 6.25;
         currentCell.radius = util.massToRadius(currentCell.mass);
         playerCircle.r = currentCell.radius;
@@ -744,6 +744,7 @@ function tickPlayer(currentPlayer) {
 function moveloop() {
     for (var i = 0; i < users.length; i++) {
         tickPlayer(users[i]);
+       // movePlayer(users[i]);
     }
 
 
@@ -785,9 +786,10 @@ function gameloop() {
 
             topUsers.push({
                 id: users[i].id,
-                name: users[i].name
+                name: users[i].name,
+                hue : users[i].hue,
+                controlNodes : users[i].controlNodes
             });
-
         }
         if (isNaN(leaderboard) || leaderboard.length !== topUsers.length) {
             leaderboard = topUsers;
@@ -806,6 +808,7 @@ function gameloop() {
 }
 
 function sendUpdates() {
+
     users.forEach(function (u) {
 
         var visibleNode = node
@@ -831,7 +834,7 @@ function sendUpdates() {
                     w.endPoint.x > u.x - u.screenWidth / 2 - 20 &&
                     w.endPoint.x < u.x + u.screenWidth / 2 + 20 &&
                     w.endPoint.y > u.y - u.screenHeight / 2 - 20 &&
-                    w.endPoint.y < u.y + u.screenHeight / 2 + 20)) {
+                    w.endPoint.y < u.y + u.screenHeigulpgught / 2 + 20)) {
                     return w;
                 }
             })
@@ -920,6 +923,7 @@ function sendUpdates() {
         }
     });
     leaderboardChanged = false;
+
 }
 
 setInterval(moveloop, 1000 / 60);
@@ -932,3 +936,5 @@ var serverport = process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || c.port
 http.listen(serverport, ipaddress, function () {
     console.log('[DEBUG] Listening on ' + ipaddress + ':' + serverport);
 });
+
+

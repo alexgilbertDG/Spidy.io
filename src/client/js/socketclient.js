@@ -60,20 +60,19 @@ class SocketClient {
 
         socket.on('leaderboard', function (data) {
             let leaderboard = data.leaderboard;
+
+
             var status = '<span class="title">Leaderboard</span>';
             for (var i = 0; i < leaderboard.length; i++) {
+                 let oPlayer = leaderboard[i];
+                let me = '';
+                if (oPlayer.id === this.player.id) me = 'me';
                 status += '<br />';
-                if (leaderboard[i].id === this.player.id) {
-                    if (leaderboard[i].name.length !== 0)
-                        status += '<span class="me">' + (i + 1) + '. ' + leaderboard[i].name + "</span>";
-                    else
-                        status += '<span class="me">' + (i + 1) + ". An unnamed cell</span>";
-                } else {
-                    if (leaderboard[i].name.length !== 0)
-                        status += (i + 1) + '. ' + leaderboard[i].name;
-                    else
-                        status += (i + 1) + '. An unnamed cell';
-                }
+                let size = Math.min(Math.max(parseInt(oPlayer.controlNodes), 5), 25);
+                status += ('<img src="img/spider_' + oPlayer.hue + '.png" width="' + size + 'px"/>');
+                status += ' <span style="color:hsl(' + oPlayer.hue + ', 50%, 50%);" class="' + me + '">';
+                status += oPlayer.name.toUpperCase();
+                status += ' </span>';
             }
             document.getElementById('status').innerHTML = status;
         });

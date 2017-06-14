@@ -31,21 +31,12 @@ var roundFoodSetting = document.getElementById('roundFood');
 roundFoodSetting.onchange = settings.toggleRoundFood;
 
 
-$("#feed").click(function () {
-    socket.emit('1');
-    window.control.reenviar = false;
-});
-
-$("#split").click(function () {
-    socket.emit('2');
-    window.control.reenviar = false;
-});
 
 
 const Control = require('./control');
 window.control = new Control();
 
-const Drawing = require('./Drawing');
+const Drawing = require('./drawing');
 new Drawing(window.control.cv.getContext('2d'));
 
 

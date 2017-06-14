@@ -36,7 +36,7 @@ div {
     border: none;
 }
 
-#feed {
+#move {
     position: absolute;
     bottom: 10px;
     right: 10px;
@@ -63,7 +63,7 @@ div {
 }
 
 #status .me {
-    color: #FF8888;
+    color: #000;
     font-size: 16.1px;
 }
 
